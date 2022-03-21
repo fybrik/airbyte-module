@@ -1,0 +1,11 @@
+data:
+  - name: "letter_frequency"
+    connection:
+      name: file
+      file:
+        connector: airbyte/source-file
+        dataset_name: letter_frequency
+        format: csv
+        url: "https://people.sc.fsu.edu/~jburkardt/data/csv/letter_frequency.csv"
+        provider:
+          storage: HTTPS
