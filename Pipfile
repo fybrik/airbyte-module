@@ -1,0 +1,25 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[[source]]
+name = "testpypi"
+url = "https://test.pypi.org/simple"
+verify_ssl = true
+
+[scripts]
+server = "python main.py"
+addlicense = "licenseheaders -y 2022 -o \"IBM Corp\" -d . --ext .py  -t ./LICENSE_HEADER"
+
+[dev-packages]
+pytest = "*"
+licenseheaders = "*"
+pylint = "*"
+
+[packages]
+pyyaml = "==5.4.1"
+docker = "==5.0.3"
+pandas = "==1.0.5"
+pyarrow = "==2.0.0"
+fybrik_python_logging = {version="0.1.0", index="testpypi"}
