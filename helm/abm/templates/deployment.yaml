@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "airbyte-module.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "airbyte-module.name" . }}
+    helm.sh/chart: {{ include "airbyte-module.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "airbyte-module.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "airbyte-module.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- range $key, $val := .Values.labels }}
+        {{ $key }}: {{ $val | quote }}
+        {{- end }}    
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      serviceAccountName: {{ include "airbyte-module.fullname" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          {{- if .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: arrow
+              containerPort: 8081
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - readOnly: true
+              mountPath: /etc/conf
+              name: config
+            - name: docker-socket
+              mountPath: /var/run
+            - name: json-dir
+              mountPath: /json
+        - name: docker-daemon
+          image: docker:20.10.7-dind
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: docker-socket
+              mountPath: /var/run
+            - name: json-dir
+              mountPath: /json
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "airbyte-module.fullname" . }}
+        - name: docker-socket
+          emptyDir: {}
+        - name: json-dir
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

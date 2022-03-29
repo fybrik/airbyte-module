@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app.kubernetes.io/name: {{ include "airbyte-module.name" . }}
+    helm.sh/chart: {{ include "airbyte-module.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: 79
+      targetPort: 8080
+      protocol: TCP
+      name: http
+    - port: {{ .Values.service.port }}
+      targetPort: 8081
+      protocol: TCP
+      name: arrow
+  selector:
+    app.kubernetes.io/name: {{ include "airbyte-module.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}

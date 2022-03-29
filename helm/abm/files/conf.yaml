@@ -1,0 +1,14 @@
+app-uuid: {{ .Values.uuid | default "app-uuid-missing" }}
+{{ if .Values.assets -}}
+data:
+{{- range $asset := .Values.assets }}
+  - name: {{  $asset.assetID | quote }}
+    {{- if and (.args) (eq (len .args) 1) -}}
+    {{- with (index .args 0) }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- end }}
+{{- end -}}
+{{- else -}}
+data: []
+{{- end -}}
