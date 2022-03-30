@@ -1,2 +1,26 @@
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 # airbyte-module
-A "Read" FybrikModule based on Airbyte
+
+The airbyte-module (ABM) for [Fybrik](https://github.com/fybrik/fybrik) is a *READ* `FybrikModule` which makes use of [Airbyte](https://airbyte.com/) [connectors](https://docs.airbyte.com/integrations).
+
+ABM is both an [Apache Arrow](https://arrow.apache.org/) [Flight](https://arrow.apache.org/docs/format/Flight.html) and an HTTP server.
+
+## What is Airbyte?
+[Airbyte](https://airbyte.com/) is a data integration tool that focuses on extracting and loading data.
+
+Airbyte has a vast catalog of [connectors](https://docs.airbyte.com/integrations) that support dozens of data sources and data destinations. These Airbyte connectors run in docker containers and are built in accordance with the Airbyte [specification](https://docs.airbyte.com/understanding-airbyte/airbyte-specification).
+
+## What is the Airbyte Module?
+
+ABM is an arrow-flight server that enables applications to consume tabular data from a wide range of data sources.
+
+Since Airbyte connectors are implemented as docker images and run as docker containers, the Airbyte Module does not require Airbyte as a prerequisite. To run the Airbyte Module, only docker is required.
+
+## How to run the Airbyte Module server locally
+
+Follow the instructions in the [sample folder](sample/README.md).
+
+## How to deploy the Airbyte Module to kubernetes using helm
+
+Follow the instructions in the [helm folder](helm/README.md).
