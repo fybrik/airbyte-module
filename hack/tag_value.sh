@@ -4,4 +4,4 @@
 
 : ${TOOLBIN:=./hack/tools/bin}
 
-${TOOLBIN}/yq eval --inplace ".image.tag = \"$DOCKER_TAG\"" helm/afm/values.yaml
+${TOOLBIN}/yq eval --inplace ".image.tag = \"$DOCKER_TAG\"" helm/abm/values.yaml
