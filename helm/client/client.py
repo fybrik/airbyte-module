@@ -5,10 +5,6 @@
 import pyarrow.flight as fl
 import json
 
-request = {
-    "asset": "letter_frequency", 
-}
-
 def read_from_endpoint(endpoint):
     client = fl.connect("grpc://{}:{}".format(args.host, args.port))
     result: fl.FlightStreamReader = client.do_get(endpoint.ticket)
@@ -19,7 +15,10 @@ def read_dataset():
     for endpoint in info.endpoints:
         read_from_endpoint(endpoint)
 
-def main(host, port):
+def main(host, port, asset):
+    request = {
+       "asset": asset,
+    }
     global client, info
     client = fl.connect("grpc://{}:{}".format(host, port))
     info = client.get_flight_info(
@@ -34,6 +33,8 @@ if __name__ == "__main__":
         '--host', type=str, default='localhost', help='afm hostname')
     parser.add_argument(
         '--port', type=int, default=8080, help='Listening port')
+    parser.add_argument(
+        '--asset', type=str, default='letter_frequency', help='name of requested asset')
     args = parser.parse_args()
 
-    main(args.host, args.port)
+    main(args.host, args.port, args.asset)
