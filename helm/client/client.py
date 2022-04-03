@@ -30,7 +30,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='arrow-flight-module sample')
     parser.add_argument(
-        '--host', type=str, default='localhost', help='afm hostname')
+        '--host', type=str, default='localhost', help='abm hostname')
     parser.add_argument(
         '--port', type=int, default=8080, help='Listening port')
     parser.add_argument(
