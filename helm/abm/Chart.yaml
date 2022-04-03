@@ -1,0 +1,4 @@
+apiVersion: v1
+description: A Helm chart for installing ABM in Kubernetes
+name: airbyte-module-chart
+version: "0.0.0"
