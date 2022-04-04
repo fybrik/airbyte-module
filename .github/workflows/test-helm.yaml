@@ -1,0 +1,17 @@
+name: Test
+on: 
+  workflow_dispatch:
+    inputs:
+      kind-version:
+        required: true
+        default: 'kind21'
+
+jobs:
+  test-module:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: install tools
+      run: make install-tools
+    - name: run test
+      run: tests/test_helm.sh ${{ github.event.inputs.kind-version }}
