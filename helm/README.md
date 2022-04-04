@@ -13,8 +13,7 @@
     ./deploy_airbyte_module_client_pod.sh
     ```
 
-    This command deploys a client pod. You get a `bash` prompt, from which you can run:
+    Now that the client pod is deployed, you can obtain the `letter_frequency` dataset from the airbyte-module server by running:
     ```bash
-    # /root/do_get.sh
+    kubectl exec -it my-shell -n default -- /root/do_get.sh
     ```
-    to obtain the `letter_frequency` dataset.
