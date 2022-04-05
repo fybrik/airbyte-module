@@ -49,16 +49,10 @@ DIFF=$(diff -b $WORKING_DIR/expected.txt res.out)
 
 /bin/rm res.out
 
-RES=0
 if [ "${DIFF}" == "" ]
 then
     echo "test succeeded"
 else
-    RES=1
-fi
-
-if [ ${RES} == 1 ]
-then
-  echo "test failed"
-  exit 1
+    echo "test failed"
+    exit 1
 fi
