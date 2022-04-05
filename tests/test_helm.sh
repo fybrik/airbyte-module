@@ -37,7 +37,6 @@ helm install airbyte-module -f helm/abm/values.sample.yaml helm/abm -n default -
 # create client pod
 cd helm/client
 ./deploy_airbyte_module_client_pod.sh
-sleep 5
 cd -
 
 kubectl exec -it my-shell -n default -- /root/do_get.sh > res.out

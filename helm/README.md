@@ -8,7 +8,7 @@
     This command deploys an airbyte-module pod in the `default` namespace, and creates an 'airbyte-module' service.
 
 
-1. To test it, go to the `client directory`, and run:
+1. To test it, go to the `client` directory, and run:
     ```bash
     ./deploy_airbyte_module_client_pod.sh
     ```
@@ -17,3 +17,4 @@
     ```bash
     kubectl exec -it my-shell -n default -- /root/do_get.sh
     ```
+    The 'letter_frequency' dataset is a CSV file found in https://people.sc.fsu.edu/~jburkardt/data/csv/letter_frequency.csv. It contains a table with the frequency of each of the 26 English letters. The helm configuration in `abm/values.sample.yaml` contains the URL for the dataset, as well the name of the docker image used as a connector to obtain this dataset (`airbyte/source-file`).
