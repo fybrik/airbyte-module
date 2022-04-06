@@ -1,0 +1,23 @@
+apiVersion: katalog.fybrik.io/v1alpha1
+kind: Asset
+metadata:
+  name: letter-frequency
+spec:
+  secretRef: 
+    name: fake-secret
+  details:
+    dataFormat: csv
+    connection:
+      name: file
+      file:
+        connector: "airbyte/source-file"
+        dataset_name: letter_frequency
+        format: csv
+        url: "https://people.sc.fsu.edu/~jburkardt/data/csv/letter_frequency.csv"
+        provider:
+          storage: HTTPS
+  metadata:
+    name: test data
+    geography: theshire 
+    tags:
+      finance: true

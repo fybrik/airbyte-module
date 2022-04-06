@@ -1,0 +1,27 @@
+name: Test
+on: 
+  workflow_dispatch:
+    inputs:
+      kind-version:
+        required: true
+        default: 'kind21'
+      cert-manager-version:
+        required: true
+        default: '1.2.0'
+
+env:
+  GO_VERSION: 1.17
+
+jobs:
+  test-module:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - name: install tools
+      run: make install-tools
+    - name: run test
+      run: tests/test_fybrik.sh ${{ github.event.inputs.kind-version }} ${{ github.event.inputs.cert-manager-version }}
