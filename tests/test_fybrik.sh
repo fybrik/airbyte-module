@@ -101,7 +101,18 @@ kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/polic
 while [[ $(kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
 
 kubectl apply -f $AIRBYTE_FYBRIK_TEST/application.yaml
-kubectl wait --for=condition=ready --all pod -n fybrik-blueprints --timeout=300s
+CMD="kubectl wait --for=condition=ready --all pod -n fybrik-blueprints --timeout=300s
+"
+count=0
+until $CMD
+do
+  if [[ $count -eq 10 ]]
+  then
+    break
+  fi
+  sleep 1
+  ((count=count+1))
+done
 
 # create client pod in default namespace
 pushd helm/client
