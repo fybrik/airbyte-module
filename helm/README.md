@@ -18,3 +18,9 @@
     kubectl exec -it my-shell -n default -- /root/do_get.sh
     ```
     The 'letter_frequency' dataset is a CSV file found in https://people.sc.fsu.edu/~jburkardt/data/csv/letter_frequency.csv. It contains a table with the frequency of each of the 26 English letters. The helm configuration in `abm/values.sample.yaml` contains the URL for the dataset, as well the name of the docker image used as a connector to obtain this dataset (`airbyte/source-file`).
+
+    Alternatively, you can obtain the same dataset through a REST GET request. This can be done by using the 'curl' utility. First you need to install it. Simply run the following commands:
+    ```bash
+    kubectl exec -it my-shell -n default -- apt-get install -y curl
+    kubectl exec -it my-shell -n default -- curl my-app-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints:79/fybrik-airbyte-sample/letter-frequency
+    ```

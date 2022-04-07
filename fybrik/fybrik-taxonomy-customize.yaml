@@ -6,6 +6,7 @@ definitions:
       - $ref: "#/definitions/db2"
       - $ref: "#/definitions/kafka"
       - $ref: "#/definitions/fybrik-arrow-flight"
+      - $ref: "#/definitions/http"
       - $ref: "#/definitions/postgres"
       - $ref: "#/definitions/mysql"
       - $ref: "#/definitions/google-sheets"
@@ -62,6 +63,19 @@ definitions:
       value_deserializer:
         type: string
   fybrik-arrow-flight:
+    type: object
+    properties:
+      hostname:
+        type: string
+      port:
+        type: string
+      scheme:
+        type: string
+    required:
+    - hostname
+    - port
+    - scheme
+  http:
     type: object
     properties:
       hostname:

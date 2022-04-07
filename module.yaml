@@ -37,4 +37,28 @@ spec:
         - source:
             protocol: file
             dataformat: csv
-
+    - capability: read
+      scope: workload
+      api:
+        connection:
+          name: http
+          http:
+            hostname: "{{ .Release.Name }}.{{ .Release.Namespace }}"
+            port: "79"
+            scheme: grpc
+      supportedInterfaces:
+        - source:
+            protocol: postgres
+            dataformat: csv
+        - source:
+            protocol: mysql
+            dataformat: csv
+        - source:
+            protocol: google-sheets
+            dataformat: csv
+        - source:
+            protocol: us-census
+            dataformat: csv
+        - source:
+            protocol: file
+            dataformat: csv
