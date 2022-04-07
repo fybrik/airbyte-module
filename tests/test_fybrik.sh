@@ -5,7 +5,7 @@ set -e
 
 export WORKING_DIR=$PWD/tests/dataset
 export TOOLBIN=$PWD/hack/tools/bin
-export AIRBYTE_FYBRIK=$PWD/fybrik
+export AIRBYTE_FYBRIK_TEST=$PWD/fybrik
 
 export PATH=$TOOLBIN:$PATH
 
@@ -67,7 +67,7 @@ kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=300s
 helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
 
 # customize taxonomy to support the airbyte module
-go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json $AIRBYTE_FYBRIK/fybrik-taxonomy-customize.yaml
+go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json $AIRBYTE_FYBRIK_TEST/fybrik-taxonomy-customize.yaml
 
 # helm install fybrik
 helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
@@ -77,7 +77,7 @@ popd
 # Related to https://github.com/cert-manager/cert-manager/issues/2908
 # Fybrik webhook not really ready after "helm install --wait"
 # A workaround is to loop until the module is applied as expected
-CMD="kubectl apply -f $AIRBYTE_FYBRIK/../module.yaml -n fybrik-system
+CMD="kubectl apply -f $AIRBYTE_FYBRIK_TEST/../module.yaml -n fybrik-system
 "
 count=0
 until $CMD
@@ -94,13 +94,13 @@ done
 kubectl create namespace fybrik-airbyte-sample
 kubectl config set-context --current --namespace=fybrik-airbyte-sample
 
-kubectl apply -f $AIRBYTE_FYBRIK/asset.yaml
+kubectl apply -f $AIRBYTE_FYBRIK_TEST/asset.yaml
 
-kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_FYBRIK/sample-policy.rego
+kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_FYBRIK_TEST/sample-policy.rego
 kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego
 while [[ $(kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
 
-kubectl apply -f $AIRBYTE_FYBRIK/application.yaml
+kubectl apply -f $AIRBYTE_FYBRIK_TEST/application.yaml
 kubectl wait --for=condition=ready --all pod -n fybrik-blueprints --timeout=300s
 
 # create client pod in default namespace
