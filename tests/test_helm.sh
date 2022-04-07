@@ -3,7 +3,7 @@
 set -x
 set -e
 
-export WORKING_DIR=$PWD/tests/test_helm
+export WORKING_DIR=$PWD/tests/dataset
 export TOOLBIN=$PWD/hack/tools/bin
 
 export PATH=$TOOLBIN:$PATH
