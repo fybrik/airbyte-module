@@ -1,4 +1,4 @@
-name: Test
+name: Test Fybrik
 on: 
   workflow_dispatch:
     inputs:

@@ -1,4 +1,4 @@
-name: Test
+name: Test Helm
 on: 
   workflow_dispatch:
     inputs:
