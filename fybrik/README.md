@@ -1,6 +1,6 @@
 # Accessing a Dataset by a Fybrik Application
 
-We explain how to access a dataset through the Airbyte Module, by a Fybrik application. In this example, we use the 'letter_frequency', a CSV file found in https://people.sc.fsu.edu/~jburkardt/data/csv/letter_frequency.csv.
+We explain how to access a dataset through the Airbyte Module, by a Fybrik application. In this example, we use the `letter-frequency` dataset, a CSV file found in https://people.sc.fsu.edu/~jburkardt/data/csv/letter_frequency.csv.
 
 You will need a copy of the Fybrik repository (`git clone https://github.com/fybrik/fybrik.git`). Set the following environment variables: FYBRIK_DIR for the path of the `fybrik` directory, and AIRBYTE_MODULE_DIR for the path of the `airbyte-module` directory.
 
@@ -19,13 +19,13 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
     kubectl apply -f $AIRBYTE_MODULE_DIR/module.yaml -n fybrik-system
     ```
 
-1. Create a new namespace for the application, and set it as a default
+1. Create a new namespace for the application, and set it as default:
    ```bash
    kubectl create namespace fybrik-airbyte-sample
    kubectl config set-context --current --namespace=fybrik-airbyte-sample
    ```
 
-1. Create an asset (the `letters frequency` asset), the policy to access if, and an application that requires this asset:
+1. Create an asset (the `letter-frequency` asset), the policy to access if, and an application that requires this asset:
    ```bash
    kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/asset.yaml
    kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_MODULE_DIR/fybrik/sample-policy.rego
@@ -34,12 +34,12 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
    kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/application.yaml
    ```
 
-1. After the application is created, the Fybrik manages attempts to create the data path for the application. Fybrik realizes that the Airbyte module is able to give the application access to the `letters frequency` dataset, and deploys it in the `fybrik-blueprints` namespace. To verify that the Airbyte module was indded deployed, run:
+1. After the application is created, the Fybrik manager attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the `letter-frequency` dataset, and deploys it in the `fybrik-blueprints` namespace. To verify that the Airbyte module was indeed deployed, run:
    ```bash
    kubectl get pods -n fybrik-blueprints
    ```
 
-1. To verify that the Airbyte module gives access to the `letters frequency` dataset, run:
+1. To verify that the Airbyte module gives access to the `letter-frequency` dataset, run:
    ```bash
    cd $AIRBYTE_MODULE_DIR/helm/client
    ./deploy_airbyte_module_client_pod.sh
