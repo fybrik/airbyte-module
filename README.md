@@ -24,3 +24,6 @@ Follow the instructions in the [sample folder](sample/README.md).
 ## How to deploy the Airbyte Module to kubernetes using helm
 
 Follow the instructions in the [helm folder](helm/README.md).
+
+## How a Fybrik Application can access a dataset, using an Airbyte FybrikModule
+Follow the instructions in the [fybrik folder](fybrik/README.md).
