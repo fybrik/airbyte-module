@@ -1,6 +1,6 @@
 # Accessing a Dataset by a Fybrik Application
 
-We explain how to access a dataset through the Airbyte Module, by a Fybrik application. In this example, we use the `letter-frequency` dataset, a CSV file found in https://people.sc.fsu.edu/~jburkardt/data/csv/letter_frequency.csv.
+We explain how, using an Airbyte FybrikModule, a workload can access data stored in google-sheets, postgres, and other data stores supported by Airbyte connectors. To do so a FybrikApplication (i.e. the request) must be submitted indicating the desired data set(s). In this example, we use the `letter-frequency` dataset, a CSV file found in https://people.sc.fsu.edu/~jburkardt/data/csv/letter_frequency.csv.
 
 You will need a copy of the Fybrik repository (`git clone https://github.com/fybrik/fybrik.git`). Set the following environment variables: FYBRIK_DIR for the path of the `fybrik` directory, and AIRBYTE_MODULE_DIR for the path of the `airbyte-module` directory.
 
@@ -25,7 +25,7 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
    kubectl config set-context --current --namespace=fybrik-airbyte-sample
    ```
 
-1. Create an asset (the `letter-frequency` asset), the policy to access if, and an application that requires this asset:
+1. Create an asset (the `letter-frequency` asset), the policy to access it (we use a policy that does not restrict access nor mandate any transformations), and an application that requires this asset:
    ```bash
    kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/asset.yaml
    kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_MODULE_DIR/fybrik/sample-policy.rego
