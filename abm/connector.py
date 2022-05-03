@@ -52,7 +52,7 @@ class GenericConnector:
     For instance, it the path is '/tmp/tmp12345', return '/json/tmp12345'.
     '''
     def name_in_container(self, path):
-        return path.replace(self.workdir, '/json', 1)
+        return path.replace(self.workdir, '/tmp', 1)
 
     '''
     Extract only the relevant data in "RECORD" lines returned by an Airbyte read operation.
@@ -84,14 +84,15 @@ class GenericConnector:
         return ret
 
     '''
+    ***** TODO: have the mount point defined somewhere
     Run a docker container from the connector image.
-    Mount the workdir on /json. Remove the container after done.
+    Mount the workdir on /tmp. Remove the container after done.
     '''
     def run_container(self, command):
         self.logger.debug("running command: " + command)
         try:
             reply = self.client.containers.run(self.connector, command,
-                volumes=[self.workdir + ':/json'], network_mode='host', remove=True)
+                volumes=[self.workdir + ':/tmp'], network_mode='host', remove=True)
             return self.filter_reply(reply.splitlines())
         except docker.errors.DockerException as e:
             self.logger.error('Running of docker container failed',
@@ -201,6 +202,44 @@ class GenericConnector:
     Transform this array into a pyarrow Table. In order to do that,
     temporarily write the JSON lines to file.
     '''
+
+    '''
+    Creates a template catalog for write connectors
+    '''
+    def create_write_catalog(self):
+        template = '{ \
+        "streams": [{ \
+                "sync_mode": "full_refresh", \
+                "destination_sync_mode": "overwrite", \
+                "stream": { \
+                        "name": "testing", \
+                        "json_schema": { \
+                                "$schema": "http://json-schema.org/draft-07/schema#", \
+                                "type": "object", \
+                                "properties": { \
+                                } \
+                        }, \
+                        "supported_sync_modes": [ \
+                                "full_refresh" \
+                        ] \
+                } \
+        }] \
+        }'
+
+        tmp_catalog = tempfile.NamedTemporaryFile(dir=self.workdir)
+        tmp_catalog.write(json.dumps(template).encode('utf-8'))
+        tmp_catalog.flush()
+        return tmp_catalog
+
+    def write_dataset(self, payload):
+        self.logger.info('write requested')
+# The catalog to be provided to the write command is from a template - there is no discover on the write
+        tmp_catalog = self.create_write_catalog()
+
+ # eg echo payload | docker run -v /Users/eliot/temp:/local -i airbyte/destination-local-json write --catalog /local/airbyte_catalog.txt --config /local/airbyte_write1.json
+        self.run_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name))
+        tmp_catalog.close()
+
     def get_dataset_table(self, schema):
         dataset = self.get_dataset()
         with tempfile.NamedTemporaryFile(dir=self.workdir) as dataset_file:

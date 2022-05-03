@@ -14,7 +14,7 @@ import socketserver
 from http import HTTPStatus
 import pyarrow.flight as fl
 
-class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
+class ABMHttpHandler(http.server.BaseHTTPRequestHandler):
     def __init__(self, request, client_address, server):
         self.config_path = server.config_path
         self.workdir = server.workdir
@@ -48,6 +48,45 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
             else:
                 self.send_response(HTTPStatus.BAD_REQUEST)
                 self.end_headers()
+
+    def do_PUT(self):
+        logger.info('write requested')
+        with Config(self.config_path) as config:
+            asset_name = self.path.lstrip('/')
+            try:
+                asset_conf = config.for_asset(asset_name)
+                connector = GenericConnector(asset_conf, logger, self.workdir)
+            except ValueError:
+                logger.error('asset not found or malformed configuration')
+                self.send_response(HTTPStatus.NOT_FOUND)
+                self.end_headers()
+                return
+            if connector.write_dataset():
+                self.send_response(HTTPStatus.OK)
+            else:
+                self.send_response(HTTPStatus.BAD_REQUEST)
+            self.end_headers()
+
+    def do_POST(self):
+        logger.info('write requested')
+        with Config(self.config_path) as config:
+            asset_name = self.path.lstrip('/')
+            try:
+                asset_conf = config.for_asset(asset_name)
+                connector = GenericConnector(asset_conf, logger, self.workdir)
+            except ValueError:
+                logger.error('asset not found or malformed configuration')
+                self.send_response(HTTPStatus.NOT_FOUND)
+                self.end_headers()
+                return
+            read_length = self.headers.get('Content-Length')
+            payload = self.rfile.read(int(read_length))
+            if connector.write_dataset(payload):
+                self.send_response(HTTPStatus.OK)
+            else:
+                self.send_response(HTTPStatus.BAD_REQUEST)
+            self.end_headers()
+
 
 class ABMHttpServer(socketserver.TCPServer):
     def __init__(self, server_address, RequestHandlerClass,

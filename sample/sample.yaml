@@ -1,11 +1,11 @@
 data:
-  - name: "letter_frequency"
+  - name: "write_test"
     connection:
       name: file
       file:
-        connector: airbyte/source-file
-        dataset_name: letter_frequency
+        connector: airbyte/destination-local-json
+        dataset_name: write_test
         format: csv
-        url: "https://people.sc.fsu.edu/~jburkardt/data/csv/letter_frequency.csv"
+        url: "/tmp/airbyte_write.json"
         provider:
-          storage: HTTPS
+          storage: local

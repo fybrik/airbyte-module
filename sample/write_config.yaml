@@ -1,0 +1,7 @@
+data:
+  - name: "write_test"
+    connection:
+      name: file
+      file:
+        connector: airbyte/destination-local-json
+        destination_path: airbyte_out
