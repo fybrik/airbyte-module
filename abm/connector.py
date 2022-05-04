@@ -92,12 +92,35 @@ class GenericConnector:
         self.logger.debug("running command: " + command)
         try:
             reply = self.client.containers.run(self.connector, command,
-                volumes=[self.workdir + ':/tmp'], network_mode='host', remove=True)
+                volumes=[self.workdir + ':/tmp'], network_mode='host', stdin_open=True, remove=True)
             return self.filter_reply(reply.splitlines())
         except docker.errors.DockerException as e:
             self.logger.error('Running of docker container failed',
                               extra={'error': str(e)})
             return None
+
+    def stream_to_container(self, command, textline):
+        # connect to docker
+        client = docker.APIClient()
+
+        # create a container
+        container = client.create_container(
+            self.connector,
+            stdin_open=True,
+            command=command)
+        client.start(container)
+
+        # attach to the container stdin socket
+        s = client.attach_socket(container, params={'stdin': 1, 'stream': 1})
+
+        # send text
+        s.send(textline)
+
+        # close, stop and disconnect
+        s.close()
+        client.stop(container)
+        client.wait(container)
+        client.remove_container(container)
 
     # Given configuration, obtain the Airbyte Catalog, which includes list of datasets
     def get_catalog(self):
@@ -226,8 +249,8 @@ class GenericConnector:
         }] \
         }'
 
-        tmp_catalog = tempfile.NamedTemporaryFile(dir=self.workdir)
-        tmp_catalog.write(json.dumps(template).encode('utf-8'))
+        tmp_catalog = tempfile.NamedTemporaryFile(dir=self.workdir, mode='w+t')
+        tmp_catalog.writelines(template)
         tmp_catalog.flush()
         return tmp_catalog
 
@@ -237,7 +260,11 @@ class GenericConnector:
         tmp_catalog = self.create_write_catalog()
 
  # eg echo payload | docker run -v /Users/eliot/temp:/local -i airbyte/destination-local-json write --catalog /local/airbyte_catalog.txt --config /local/airbyte_write1.json
-        self.run_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name))
+#        self.run_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name)) self.run_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name))
+        passPayload = 'echo \'' + payload.decode('utf-8') + '\''
+        self.stream_to_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name),passPayload)
+#        self.run_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name))
+
         tmp_catalog.close()
 
     def get_dataset_table(self, schema):
