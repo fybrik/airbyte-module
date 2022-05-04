@@ -261,7 +261,7 @@ class GenericConnector:
 
  # eg echo payload | docker run -v /Users/eliot/temp:/local -i airbyte/destination-local-json write --catalog /local/airbyte_catalog.txt --config /local/airbyte_write1.json
 #        self.run_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name)) self.run_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name))
-        passPayload = 'echo \'' + payload.decode('utf-8') + '\''
+        passPayload = payload.decode('utf-8')
         self.stream_to_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name),passPayload)
 #        self.run_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name))
 
