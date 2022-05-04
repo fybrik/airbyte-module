@@ -100,6 +100,7 @@ class GenericConnector:
             return None
 
     def stream_to_container(self, command, textline):
+#https://stackoverflow.com/questions/26843625/how-to-send-to-stdin-of-a-docker-py-container
         # connect to docker
         client = docker.APIClient()
 
@@ -114,7 +115,7 @@ class GenericConnector:
         s = client.attach_socket(container, params={'stdin': 1, 'stream': 1})
 
         # send text
-        s.send(textline)
+        s._sock.send(textline.encode('utf-8'))
 
         # close, stop and disconnect
         s.close()
