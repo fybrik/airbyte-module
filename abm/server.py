@@ -22,8 +22,8 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
 
     '''
     do_GET() gets the asset name from the URL.
-    for instance, if the URL is localhost:8080/letter_frequency
-    then the asset name is letter_frequency.
+    for instance, if the URL is localhost:8080/userdata
+    then the asset name is userdata.
     Obtain the dataset associated with the asset name, and
     return it to client.
     '''

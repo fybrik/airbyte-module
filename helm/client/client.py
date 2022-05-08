@@ -34,7 +34,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--port', type=int, default=8080, help='Listening port')
     parser.add_argument(
-        '--asset', type=str, default='letter_frequency', help='name of requested asset')
+        '--asset', type=str, default='userdata', help='name of requested asset')
     args = parser.parse_args()
 
     main(args.host, args.port, args.asset)
