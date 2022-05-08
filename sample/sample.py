@@ -7,7 +7,7 @@ import pyarrow as pa
 import json
 
 request = {
-    "asset": "letter_frequency",
+    "asset": "userdata",
 }
 
 def main(port):

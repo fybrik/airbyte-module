@@ -1,27 +1,12 @@
-     Letter   "Frequency"   "Percentage"
-0       "A"    24373121.0            8.1
-1       "B"     4762938.0            1.6
-2       "C"     8982417.0            3.0
-3       "D"    10805580.0            3.6
-4       "E"    37907119.0           12.6
-5       "F"     7486889.0            2.5
-6       "G"     5143059.0            1.7
-7       "H"    18058207.0            6.0
-8       "I"    21820970.0            7.3
-9       "J"      474021.0            0.2
-10      "K"     1720909.0            0.6
-11      "L"    11730498.0            3.9
-12      "M"     7391366.0            2.5
-13      "N"    21402466.0            7.1
-14      "O"    23215532.0            7.7
-15      "P"     5719422.0            1.9
-16      "Q"      297237.0            0.1
-17      "R"    17897352.0            5.9
-18      "S"    19059775.0            6.3
-19      "T"    28691274.0            9.5
-20      "U"     8022379.0            2.7
-21      "V"     2835696.0            0.9
-22      "W"     6505294.0            2.2
-23      "X"      562732.0            0.2
-24      "Y"     5910495.0            2.0
-25      "Z"       93172.0            0.0
+       registration_dttm      id first_name  last_name                      email  gender       ip_address                cc     country   birthdate     salary                     title comments
+0    2016-02-03T13:36:39     1.0     Donald      Lewis      dlewis0@clickbank.net    Male    102.22.124.20                     Indonesia    7/9/1972  140249.37  Senior Financial Analyst         
+1    2016-02-03T00:22:28     2.0     Walter    Collins    wcollins1@bloglovin.com    Male     247.28.26.93  3587726269478025       China                    NaN                                   
+2    2016-02-03T18:29:04     3.0   Michelle  Henderson   mhenderson2@geocities.jp  Female   193.68.146.150                        France   1/15/1964  236219.26                   Teacher         
+3    2016-02-03T13:42:19     4.0       Lori     Hudson        lhudson3@dion.ne.jp            34.252.168.48  3568840151595649      Russia   4/22/1988        NaN    Nuclear Power Engineer         
+4    2016-02-03T00:15:29     5.0     Howard     Miller          hmiller4@fema.gov    Male  103.193.150.230  3583473261055014      France  11/26/1998   50210.02             Senior Editor         
+..                   ...     ...        ...        ...                        ...     ...              ...               ...         ...         ...        ...                       ...      ...
+995  2016-02-03T13:36:49   996.0      Carol     Warren     cwarrenrn@geocities.jp  Female     71.7.191.213                         China              185421.82                                  "
+996  2016-02-03T04:39:01   997.0      Helen     Fields      hfieldsro@comcast.net  Female   164.190.97.183                      Malaysia              279671.68                                   
+997  2016-02-03T00:33:54   998.0  Stephanie       Sims      ssimsrp@newyorker.com  Female    135.66.68.181  3548125808139842      Poland              112275.78                                   
+998  2016-02-03T00:15:08   999.0      Marie     Medina   mmedinarq@thetimes.co.uk  Female   223.83.175.211                    Kazakhstan   3/25/1969   53564.76        Speech Pathologist         
+999  2016-02-03T00:53:53  1000.0      Alice   Peterson  apetersonrr@parallels.com  Female     244.89.94.58  5602227843485236     Nigeria              239858.70                                   

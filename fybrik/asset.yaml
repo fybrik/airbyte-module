@@ -1,7 +1,7 @@
 apiVersion: katalog.fybrik.io/v1alpha1
 kind: Asset
 metadata:
-  name: letter-frequency
+  name: userdata
 spec:
   secretRef: 
     name: fake-secret
@@ -11,9 +11,9 @@ spec:
       name: file
       file:
         connector: "airbyte/source-file"
-        dataset_name: letter_frequency
-        format: csv
-        url: "https://people.sc.fsu.edu/~jburkardt/data/csv/letter_frequency.csv"
+        dataset_name: userdata
+        format: parquet
+        url: "https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet"
         provider:
           storage: HTTPS
   metadata:

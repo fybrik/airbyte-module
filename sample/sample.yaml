@@ -1,11 +1,11 @@
 data:
-  - name: "letter_frequency"
+  - name: "userdata"
     connection:
       name: file
       file:
         connector: airbyte/source-file
-        dataset_name: letter_frequency
-        format: csv
-        url: "https://people.sc.fsu.edu/~jburkardt/data/csv/letter_frequency.csv"
+        dataset_name: userdata
+        format: parquet
+        url: "https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet"
         provider:
           storage: HTTPS
