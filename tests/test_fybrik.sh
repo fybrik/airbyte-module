@@ -119,7 +119,7 @@ pushd helm/client
 ./deploy_airbyte_module_client_pod.sh
 popd
 
-kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/letter-frequency > res.out
+kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata > res.out
 kubectl delete pod my-shell -n default
 
 DIFF=$(diff -b $WORKING_DIR/expected.txt res.out)
