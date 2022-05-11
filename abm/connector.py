@@ -170,14 +170,10 @@ class GenericConnector:
         catalog_file.flush()
 
         # step 3: Run the Airbyte read operation to read the datasets
-        ret = []
-        batches = self.run_container('read --config ' + 
-                      self.name_in_container(self.conf_file.name)
+        return self.run_container('read --config '
+                      + self.name_in_container(self.conf_file.name)
                       + ' --catalog '
                       + self.name_in_container(catalog_file.name))
-        for lines in batches:
-            ret = ret + lines
-        return ret
 
     '''
     Obtain an AirbyteCatalog json structure, and translate it to a dictionary.
@@ -222,11 +218,13 @@ class GenericConnector:
     Transform this array into a pyarrow Table. In order to do that,
     temporarily write the JSON lines to file.
     '''
-    def get_dataset_table(self, schema):
-        dataset = self.get_dataset()
-        with tempfile.NamedTemporaryFile(dir=self.workdir) as dataset_file:
-            for line in dataset:
-                dataset_file.write(line)
-            dataset_file.flush()
-            return pa_json.read_json(dataset_file.name,
+    def get_dataset_batches(self, schema):
+        batches = self.get_dataset()
+        for batch in batches:
+            if batch:
+                with tempfile.NamedTemporaryFile(dir=self.workdir) as dataset_file:
+                    for line in batch:
+                        dataset_file.write(line)
+                    dataset_file.flush()
+                    yield pa_json.read_json(dataset_file.name,
                                       parse_options=pa_json.ParseOptions(schema))
