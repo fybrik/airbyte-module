@@ -87,12 +87,13 @@ class GenericConnector:
     Run a docker container from the connector image.
     Mount the workdir on /json. Remove the container after done.
     '''
-    def run_container(self, command):
+    def run_container(self, command, stream=True):
         self.logger.debug("running command: " + command)
         try:
             reply = self.client.containers.run(self.connector, command,
-                volumes=[self.workdir + ':/json'], network_mode='host', remove=True)
-            return self.filter_reply(reply.splitlines())
+                volumes=[self.workdir + ':/json'], network_mode='host',
+                remove=True, stream=stream)
+            return self.filter_reply(reply)
         except docker.errors.DockerException as e:
             self.logger.error('Running of docker container failed',
                               extra={'error': str(e)})
