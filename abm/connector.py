@@ -71,7 +71,6 @@ class GenericConnector:
     '''
     def filter_reply(self, lines, batch_size=100):
         count = 0
-        ret = []
         for line in lines:
             if count == 0:
                 ret = []
