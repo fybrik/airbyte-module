@@ -26,4 +26,9 @@ Follow the instructions in the [sample folder](sample/README.md).
 Follow the instructions in the [helm folder](helm/README.md).
 
 ## How a Fybrik Application can access a dataset, using an Airbyte FybrikModule
-Follow the instructions in the [fybrik folder](fybrik/README.md).
+If you would like to run a use case where the application has unrestricted access to a dataset,
+follow the instructions [here](fybrik/README.md).
+
+However, if you are interested in a use case where the governance policies mandate that some of the dataset
+columns must be redacted, follow the instructions here(fybrik/README_Chaining.md). In this scenario, both the airbyte module and the [arrow-flight-module](https://github.com/fybrik/arrow-flight-module) are deployed. The airbyte
+module reads the dataset, whereas the arrow-flight-module transforms the dataset based on the governance policies.
