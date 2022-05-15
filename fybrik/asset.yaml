@@ -21,3 +21,16 @@ spec:
     geography: theshire 
     tags:
       finance: true
+    columns:
+      - name: first_name
+        tags:
+          PII: true
+      - name: last_name
+        tags:
+          PII: true
+      - name: email
+        tags:
+          PII: true
+      - name: birthdate
+        tags:
+          PII: true
