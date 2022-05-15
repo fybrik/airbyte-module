@@ -3,10 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import docker
+import os
+import time
 import json
 import tempfile
 import pyarrow as pa
 from pyarrow import json as pa_json
+
+MOUNTDIR = '/local'
 
 class GenericConnector:
     def __init__(self, config, logger, workdir):
@@ -52,7 +56,7 @@ class GenericConnector:
     For instance, it the path is '/tmp/tmp12345', return '/json/tmp12345'.
     '''
     def name_in_container(self, path):
-        return path.replace(self.workdir, '/tmp', 1)
+        return path.replace(self.workdir, MOUNTDIR, 1)
 
     '''
     Extract only the relevant data in "RECORD" lines returned by an Airbyte read operation.
@@ -86,13 +90,13 @@ class GenericConnector:
     '''
     ***** TODO: have the mount point defined somewhere
     Run a docker container from the connector image.
-    Mount the workdir on /tmp. Remove the container after done.
+    Mount the workdir on MOUNTDIR. Remove the container after done.
     '''
     def run_container(self, command):
         self.logger.debug("running command: " + command)
         try:
             reply = self.client.containers.run(self.connector, command,
-                volumes=[self.workdir + ':/tmp'], network_mode='host', stdin_open=True, remove=True)
+                volumes=[self.workdir + ':'+MOUNTDIR], network_mode='host', stdin_open=True, remove=True)
             return self.filter_reply(reply.splitlines())
         except docker.errors.DockerException as e:
             self.logger.error('Running of docker container failed',
@@ -102,26 +106,29 @@ class GenericConnector:
     def stream_to_container(self, command, textline):
 #https://stackoverflow.com/questions/26843625/how-to-send-to-stdin-of-a-docker-py-container
         # connect to docker
-        client = docker.APIClient()
 
-        # create a container
-        container = client.create_container(
-            self.connector,
-            stdin_open=True,
-            command=command)
-        client.start(container)
+        client = self.client
+        container = client.containers.run(self.connector, network_mode='host', detach=True, tty=False, stdin_open=True, volumes=[self.workdir + ':'+MOUNTDIR],command=command, remove=True)
 
-        # attach to the container stdin socket
-        s = client.attach_socket(container, params={'stdin': 1, 'stream': 1})
+# attach to the container stdin socket
+        s = container.attach_socket(params={'stdin': 1, 'stream': 1, 'stdout': 1,})
+        # Set the socket as blocking
+        s._sock.setblocking(True)
 
-        # send text
         s._sock.send(textline.encode('utf-8'))
+#        os.write(s.fileno(), textline.encode())
+ #       msg = s._sock.recv(1024)
+ #       print(msg)
 
-        # close, stop and disconnect
-        s.close()
-        client.stop(container)
-        client.wait(container)
-        client.remove_container(container)
+        s._sock.send(("\x04").encode())  # ctrl d
+        s._sock.close()
+ #       for line in container.logs(stream=True):
+ #           print(line.strip())
+ #       exitcode = container.wait()
+ #       print('exit code = ' + exitcode)
+
+        container.stop()
+        client.close()
 
     # Given configuration, obtain the Airbyte Catalog, which includes list of datasets
     def get_catalog(self):
@@ -267,6 +274,7 @@ class GenericConnector:
 #        self.run_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name))
 
         tmp_catalog.close()
+        return 200  # Need to figure out how to handle error return
 
     def get_dataset_table(self, schema):
         dataset = self.get_dataset()
