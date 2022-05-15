@@ -1,4 +1,4 @@
-# Accessing a Dataset by a Fybrik Application
+# Accessing a Dataset by a Fybrik Application, Through FybrikModule Chaining
 
 In this page, we explain how to recreate a use case where the governance policies mandate that some
 of the dataset columns must be redacted. The airbyte module currently has no data-transformation capabilities.
