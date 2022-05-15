@@ -69,19 +69,30 @@ class GenericConnector:
     Relevant lines are JSON-formatted, and have a 'type' field which is
     either 'CATALOG' or 'RECORD'
     '''
-    def filter_reply(self, lines):
-        ret = []
+    def filter_reply(self, lines, batch_size=100):
+        count = 0
         for line in lines:
+            if count == 0:
+                ret = []
             try:
                line_dict = json.loads(line)
                if 'type' in line_dict:
+                   if line_dict['type'] == 'LOG':
+                       continue
                    if line_dict['type'] == 'CATALOG':
                        ret.append(line)
                    elif line_dict['type'] == 'RECORD':
                        ret.append(self.extract_data(line_dict))
+                   count = count + 1
+               if count == batch_size:
+                   count = 0
+                   yield ret
             finally:
                continue
-        return ret
+        if count == 0:
+            yield []
+        else:
+            yield ret
 
     '''
     Run a docker container from the connector image.
@@ -91,8 +102,9 @@ class GenericConnector:
         self.logger.debug("running command: " + command)
         try:
             reply = self.client.containers.run(self.connector, command,
-                volumes=[self.workdir + ':/json'], network_mode='host', remove=True)
-            return self.filter_reply(reply.splitlines())
+                volumes=[self.workdir + ':/json'], network_mode='host',
+                remove=True, stream=True)
+            return self.filter_reply(reply)
         except docker.errors.DockerException as e:
             self.logger.error('Running of docker container failed',
                               extra={'error': str(e)})
@@ -100,7 +112,10 @@ class GenericConnector:
 
     # Given configuration, obtain the Airbyte Catalog, which includes list of datasets
     def get_catalog(self):
-        return self.run_container('discover --config ' + self.name_in_container(self.conf_file.name))
+        ret = []
+        for lines in self.run_container('discover --config ' + self.name_in_container(self.conf_file.name)):
+            ret = ret + lines
+        return ret
 
     translate = {
         'number': 'DOUBLE', # Number may be an integer or a double. We play it safe
@@ -154,9 +169,10 @@ class GenericConnector:
         catalog_file.flush()
 
         # step 3: Run the Airbyte read operation to read the datasets
-        return self.run_container('read --config ' + self.name_in_container(self.conf_file.name) +
-                            ' --catalog ' + self.name_in_container(catalog_file.name))
-
+        return self.run_container('read --config '
+                      + self.name_in_container(self.conf_file.name)
+                      + ' --catalog '
+                      + self.name_in_container(catalog_file.name))
 
     '''
     Obtain an AirbyteCatalog json structure, and translate it to a dictionary.
@@ -201,11 +217,13 @@ class GenericConnector:
     Transform this array into a pyarrow Table. In order to do that,
     temporarily write the JSON lines to file.
     '''
-    def get_dataset_table(self, schema):
-        dataset = self.get_dataset()
-        with tempfile.NamedTemporaryFile(dir=self.workdir) as dataset_file:
-            for line in dataset:
-                dataset_file.write(line)
-            dataset_file.flush()
-            return pa_json.read_json(dataset_file.name,
+    def get_dataset_batches(self, schema):
+        batches = self.get_dataset()
+        for batch in batches:
+            if batch:
+                with tempfile.NamedTemporaryFile(dir=self.workdir) as dataset_file:
+                    for line in batch:
+                        dataset_file.write(line)
+                    dataset_file.flush()
+                    yield pa_json.read_json(dataset_file.name,
                                       parse_options=pa_json.ParseOptions(schema))

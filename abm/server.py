@@ -39,12 +39,13 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 return
 
-            dataset = connector.get_dataset()
-            if dataset:
+            batches = connector.get_dataset()
+            if batches:
                 self.send_response(HTTPStatus.OK)
                 self.end_headers()
-                for line in dataset:
-                    self.wfile.write(line + b'\n')
+                for batch in batches:
+                    for line in batch:
+                        self.wfile.write(line + b'\n')
             else:
                 self.send_response(HTTPStatus.BAD_REQUEST)
                 self.end_headers()
@@ -112,10 +113,10 @@ class ABMFlightServer(fl.FlightServerBase):
         schema = connector.get_schema()
 
         # read dataset using the Airbyte 'read' operation
-        table = connector.get_dataset_table(schema)
+        batches = connector.get_dataset_batches(schema)
 
         # return dataset as arrow flight record batches
-        return fl.GeneratorStream(schema, table.to_batches())
+        return fl.GeneratorStream(schema, batches)
 
     '''
     Serve arrow-flight get_flight_info requests.
