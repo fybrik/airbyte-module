@@ -1,5 +1,15 @@
 # Accessing a Dataset by a Fybrik Application
 
+In this page, we explain how to recreate a use case where the governance policies mandate that some
+of the dataset columns must be redacted. The airbyte module currently has no data-transformation capabilities.
+Therefore, to satisfy the constraints, Fybrik must deploy two modules: the airbyte module for reading the
+dataset, and the [arrow-flight-module](https://github.com/fybrik/arrow-flight-module) for transforming the
+dataset based on the governance policies.
+
+The use case we describe is similar to the use case out like [here](fybrik/README.md). The difference is that
+in this use case the governance policies mandate a data transformation. Therefore, the main difference is in the
+rego policy file: [sample-policy-restrictive.rego](sample-policy-restrictive.rego) rather than [sample-policy.rego](sample-policy.rego).
+
 We explain how, using an Airbyte FybrikModule, a workload can access data stored in google-sheets, postgres, and other data stores supported by Airbyte connectors. To do so a FybrikApplication (i.e. the request) must be submitted indicating the desired data set(s). In this example, we use the `userdata` dataset, a Parquet file found in https://github.com/Teradata/kylo/blob/master/samples/sample-data/parquet/userdata2.parquet.
 
 You will need a copy of the Fybrik repository (`git clone https://github.com/fybrik/fybrik.git`). Set the following environment variables: FYBRIK_DIR for the path of the `fybrik` directory, and AIRBYTE_MODULE_DIR for the path of the `airbyte-module` directory.
