@@ -108,12 +108,11 @@ class GenericConnector:
         # connect to docker
 
         client = self.client
-        container = client.containers.run(self.connector, network_mode='host', detach=True, tty=False, stdin_open=True, volumes=[self.workdir + ':'+MOUNTDIR],command=command, remove=True)
+        container = client.containers.run(self.connector, name='write_try', detach=True, tty=True, stdin_open=True, volumes=[self.workdir + ':'+MOUNTDIR],command=command, remove=True)
 
 # attach to the container stdin socket
-        s = container.attach_socket(params={'stdin': 1, 'stream': 1, 'stdout': 1,})
-        # Set the socket as blocking
-        s._sock.setblocking(True)
+        s = container.attach_socket(params={'stdin': 1, 'stream': 1, 'stdout':1,'stderr':1})
+        s._sock.setblocking(False)
 
         s._sock.send(textline.encode('utf-8'))
 #        os.write(s.fileno(), textline.encode())
@@ -122,6 +121,7 @@ class GenericConnector:
 
         s._sock.send(("\x04").encode())  # ctrl d
         s._sock.close()
+
  #       for line in container.logs(stream=True):
  #           print(line.strip())
  #       exitcode = container.wait()
