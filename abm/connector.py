@@ -88,7 +88,6 @@ class GenericConnector:
         return ret
 
     '''
-    ***** TODO: have the mount point defined somewhere
     Run a docker container from the connector image.
     Mount the workdir on MOUNTDIR. Remove the container after done.
     '''
@@ -104,9 +103,6 @@ class GenericConnector:
             return None
 
     def stream_to_container(self, command, textline):
-#https://stackoverflow.com/questions/26843625/how-to-send-to-stdin-of-a-docker-py-container
-        # connect to docker
-
         client = self.client
         container = client.containers.run(self.connector, name='write_try', detach=True, tty=True, stdin_open=True, volumes=[self.workdir + ':'+MOUNTDIR],command=command, remove=True)
 
@@ -115,17 +111,11 @@ class GenericConnector:
         s._sock.setblocking(False)
 
         s._sock.send(textline.encode('utf-8'))
-#        os.write(s.fileno(), textline.encode())
- #       msg = s._sock.recv(1024)
- #       print(msg)
-
         s._sock.send(("\x04").encode())  # ctrl d
         s._sock.close()
 
  #       for line in container.logs(stream=True):
  #           print(line.strip())
- #       exitcode = container.wait()
- #       print('exit code = ' + exitcode)
 
         container.stop()
         client.close()
@@ -271,7 +261,6 @@ class GenericConnector:
 #        self.run_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name)) self.run_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name))
         passPayload = payload.decode('utf-8')
         self.stream_to_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name),passPayload)
-#        self.run_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name))
 
         tmp_catalog.close()
         return 200  # Need to figure out how to handle error return
