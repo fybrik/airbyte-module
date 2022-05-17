@@ -1,0 +1,17 @@
+data:
+  - name: s3_write_test
+    connection:
+      name: file
+      file:
+        connector: airbyte/destination-s3
+        s3_path_format: ${NAMESPACE}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_
+        s3_endpoint: "http://s3.eu.cloud-object-storage.appdomain.cloud"
+        s3_bucket_name: "heir-test1"
+        s3_bucket_path: "from-connector"
+        s3_bucket_region: ""
+        access_key_id: "XXXXXXX"
+        secret_access_key: "YYYYYY"
+        format: 
+            format_type: CSV
+            flattening: No flattening
+        
