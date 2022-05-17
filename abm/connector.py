@@ -108,14 +108,14 @@ class GenericConnector:
 
 # attach to the container stdin socket
         s = container.attach_socket(params={'stdin': 1, 'stream': 1, 'stdout':1,'stderr':1})
-        s._sock.setblocking(False)
+        s._sock.setblocking(True)
 
         s._sock.send(textline.encode('utf-8'))
-        s._sock.send(("\x04").encode())  # ctrl d
+        s._sock.send(("\x04").encode())  # ctrl d to finish things up
         s._sock.close()
 
  #       for line in container.logs(stream=True):
- #           print(line.strip())
+ #           self.logger.message(line.strip())
 
         container.stop()
         client.close()
@@ -258,7 +258,6 @@ class GenericConnector:
         tmp_catalog = self.create_write_catalog()
 
  # eg echo payload | docker run -v /Users/eliot/temp:/local -i airbyte/destination-local-json write --catalog /local/airbyte_catalog.txt --config /local/airbyte_write1.json
-#        self.run_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name)) self.run_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name))
         passPayload = payload.decode('utf-8')
         self.stream_to_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name),passPayload)
 
