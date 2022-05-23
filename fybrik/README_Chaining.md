@@ -1,16 +1,14 @@
-# Accessing a Dataset by a Fybrik Application, Through FybrikModule Chaining
+# Data Plane Demonstrating Chained FybrikModules for Accessing a Dataset
 
-In this page, we explain how to recreate a use case where the governance policies mandate that some
-of the dataset columns must be redacted. The airbyte module currently has no data-transformation capabilities.
+In this page, we explain how to implement a use case where the governance policies mandate that some
+of the dataset columns must be redacted. The airbyte module has no data-transformation capabilities.
 Therefore, to satisfy the constraints, Fybrik must deploy two modules: the airbyte module for reading the
 dataset, and the [arrow-flight-module](https://github.com/fybrik/arrow-flight-module) for transforming the
 dataset based on the governance policies.
 
-The use case we describe is similar to the use case out like [here](fybrik/README.md). The difference is that
-in this use case the governance policies mandate a data transformation. Therefore, the main difference is in the
-rego policy file: [sample-policy-restrictive.rego](sample-policy-restrictive.rego) rather than [sample-policy.rego](sample-policy.rego).
+The current use case differs from the `Unrestricted Read` use case outlined [here](README.md) in that governance policies mandate transformation of sensitive data. See our use case's [policy](sample-policy-restrictive.rego) vs. the `Unrestricted Read` [policy](sample-policy.rego).
 
-We explain how, using an Airbyte FybrikModule, a workload can access data stored in google-sheets, postgres, and other data stores supported by Airbyte connectors. To do so a FybrikApplication (i.e. the request) must be submitted indicating the desired data set(s). In this example, we use the `userdata` dataset, a Parquet file found in https://github.com/Teradata/kylo/blob/master/samples/sample-data/parquet/userdata2.parquet.
+We demonstrate how, using an Airbyte FybrikModule, a workload can access data stored in google-sheets, postgres, and other data stores supported by Airbyte connectors. To do so a FybrikApplication (i.e. the request) must be submitted indicating the desired data set(s). In this example, we use the `userdata` dataset, a Parquet file found in https://github.com/Teradata/kylo/blob/master/samples/sample-data/parquet/userdata2.parquet.
 
 You will need a copy of the Fybrik repository (`git clone https://github.com/fybrik/fybrik.git`). Set the following environment variables: FYBRIK_DIR for the path of the `fybrik` directory, and AIRBYTE_MODULE_DIR for the path of the `airbyte-module` directory.
 
@@ -40,7 +38,7 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
    kubectl config set-context --current --namespace=fybrik-airbyte-sample
    ```
 
-1. Create an asset (the `userdata` asset), the policy to access it (we use a policy that requires redactions to PII columns), and an application that requires this asset:
+1. Create an asset (the `userdata` asset) in fybrik's mini data catalog, the policy to access it (we use a policy that requires redactions to PII columns), and a FybrikApplication indicating the workload, context, and data requested:
    ```bash
    kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/asset.yaml
    kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_MODULE_DIR/fybrik/sample-policy-restrictive.rego
@@ -49,7 +47,7 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
    kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/application.yaml
    ```
 
-1. After the application is created, the Fybrik manager attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the `userdata` dataset, and that the arrow-flight module could provide the redaction transformation. Fybrik deploys both modules in the `fybrik-blueprints` namespace. To verify that the Airbyte module and the arrow-flight module were indeed deployed, run:
+1. After the application is applied, the Fybrik manager attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the `userdata` dataset, and that the arrow-flight module could provide the redaction transformation. Fybrik deploys both modules in the `fybrik-blueprints` namespace. To verify that the Airbyte module and the arrow-flight module were indeed deployed, run:
    ```bash
    kubectl get pods -n fybrik-blueprints
    ```
