@@ -27,7 +27,7 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
     kubectl apply -f $AIRBYTE_MODULE_DIR/module.yaml -n fybrik-system
     ```
 
-1. In this scenaio, we also need the arrow-flight module:
+1. In this scenaio, we also need the arrow-flight module since it does the transform:
     ```bash
     kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
     ```
