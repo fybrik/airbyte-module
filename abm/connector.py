@@ -104,7 +104,7 @@ class GenericConnector:
 
     def stream_to_container(self, command, textline):
         client = self.client
-        container = client.containers.run(self.connector, name='write_try', detach=True, tty=True, stdin_open=True, volumes=[self.workdir + ':'+MOUNTDIR],command=command, remove=True)
+        container = client.containers.run(self.connector, detach=True, tty=True, stdin_open=True, volumes=[self.workdir + ':'+MOUNTDIR],command=command, remove=True)
 
 # attach to the container stdin socket
         s = container.attach_socket(params={'stdin': 1, 'stream': 1, 'stdout':1,'stderr':1})

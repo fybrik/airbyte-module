@@ -14,7 +14,7 @@ import socketserver
 from http import HTTPStatus
 import pyarrow.flight as fl
 
-class ABMHttpHandler(http.server.BaseHTTPRequestHandler):
+class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, request, client_address, server):
         self.config_path = server.config_path
         self.workdir = server.workdir
@@ -61,7 +61,9 @@ class ABMHttpHandler(http.server.BaseHTTPRequestHandler):
                 self.send_response(HTTPStatus.NOT_FOUND)
                 self.end_headers()
                 return
-            if connector.write_dataset():
+            read_length = self.headers.get('Content-Length')
+            payload = self.rfile.read(int(read_length))
+            if connector.write_dataset(payload):
                 self.send_response(HTTPStatus.OK)
             else:
                 self.send_response(HTTPStatus.BAD_REQUEST)

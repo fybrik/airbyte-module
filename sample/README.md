@@ -27,10 +27,18 @@ Arrow Flight server (on port 8081)
    ```bash
    pipenv run python sample/sample.py
     ```
-## write test
+## write test for CSV
 1. Run the server with
     ```bash
     pipenv run server --config sample/write_config.yaml  --workdir /tmp
 2. Send the information to be written to the server
    sample/post.sh
 3. Check the output in /tmp/airbyte_out
+
+## write test for S3
+NOTE:  The S3 bucket must exist in advance!
+1. Run the server with
+    ```bash
+   pipenv run server --config sample/s3_write_config.yaml  --workdir /tmp
+   2. Send the information to be written to the server
+   sample/s3_post.sh
