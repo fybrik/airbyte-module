@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import docker
-import os
-import time
 import json
 import tempfile
 import pyarrow as pa
 from pyarrow import json as pa_json
 
 MOUNTDIR = '/local'
+CHUNKSIZE = 1024
+CTRLD = '\x04'.encode()
 
 class GenericConnector:
     def __init__(self, config, logger, workdir):
@@ -102,24 +102,25 @@ class GenericConnector:
                               extra={'error': str(e)})
             return None
 
-    def stream_to_container(self, command, textline):
+    def open_socket_to_container(self, command):
         client = self.client
-        container = client.containers.run(self.connector, detach=True, tty=True, stdin_open=True, volumes=[self.workdir + ':'+MOUNTDIR],command=command, remove=True)
-
-# attach to the container stdin socket
-        s = container.attach_socket(params={'stdin': 1, 'stream': 1, 'stdout':1,'stderr':1})
+        container = client.containers.run(self.connector, detach=True, tty=True, stdin_open=True,
+                                          volumes=[self.workdir + ':' + MOUNTDIR], command=command, remove=True)
+        self.container = container
+        # attach to the container stdin socket
+        s = container.attach_socket(params={'stdin': 1, 'stream': 1, 'stdout': 1, 'stderr': 1})
         s._sock.setblocking(True)
+        return s
 
-        s._sock.send(textline.encode('utf-8'))
-        s._sock.send(("\x04").encode())  # ctrl d to finish things up
+    def close_socket_to_container(self, s):
+        s._sock.sendall(CTRLD)  # ctrl d to finish things up
         s._sock.close()
+        self.container.stop()
+        self.client.close()
 
- #       for line in container.logs(stream=True):
- #           self.logger.message(line.strip())
-
-        container.stop()
-        client.close()
-
+    def write_to_socket_to_container(self, s, binary_textline):
+        s._sock.sendall(binary_textline)
+        s.flush()
     # Given configuration, obtain the Airbyte Catalog, which includes list of datasets
     def get_catalog(self):
         return self.run_container('discover --config ' + self.name_in_container(self.conf_file.name))
@@ -252,15 +253,23 @@ class GenericConnector:
         tmp_catalog.flush()
         return tmp_catalog
 
-    def write_dataset(self, payload):
+    def write_dataset(self, fptr, length):
         self.logger.info('write requested')
-# The catalog to be provided to the write command is from a template - there is no discover on the write
+        # The catalog to be provided to the write command is from a template - there is no discover on the write
         tmp_catalog = self.create_write_catalog()
 
- # eg echo payload | docker run -v /Users/eliot/temp:/local -i airbyte/destination-local-json write --catalog /local/airbyte_catalog.txt --config /local/airbyte_write1.json
-        passPayload = payload.decode('utf-8')
-        self.stream_to_container('write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name),passPayload)
+        command = 'write --config ' + self.name_in_container(self.conf_file.name) + ' --catalog ' + self.name_in_container(tmp_catalog.name)
+        s = self.open_socket_to_container(command)
 
+
+ # eg echo payload | docker run -v /Users/eliot/temp:/local -i airbyte/destination-local-json write --catalog /local/airbyte_catalog.txt --config /local/airbyte_write1.json
+        bytesToWrite = length
+        while bytesToWrite > 0:
+            readSize = CHUNKSIZE if (bytesToWrite - CHUNKSIZE) >= 0 else bytesToWrite
+            bytesToWrite -= readSize
+            payload = fptr.read(int(readSize))
+            self.write_to_socket_to_container(s, payload)
+        self.close_socket_to_container(s)
         tmp_catalog.close()
         return 200  # Need to figure out how to handle error return
 
