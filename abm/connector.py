@@ -3,8 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import docker
-import os
-import time
 import json
 import tempfile
 import pyarrow as pa
@@ -12,6 +10,7 @@ from pyarrow import json as pa_json
 
 MOUNTDIR = '/local'
 CHUNKSIZE = 1024
+CTRLD = '\x04'.encode()
 
 class GenericConnector:
     def __init__(self, config, logger, workdir):
@@ -107,19 +106,21 @@ class GenericConnector:
         client = self.client
         container = client.containers.run(self.connector, detach=True, tty=True, stdin_open=True,
                                           volumes=[self.workdir + ':' + MOUNTDIR], command=command, remove=True)
-
+        self.container = container
         # attach to the container stdin socket
         s = container.attach_socket(params={'stdin': 1, 'stream': 1, 'stdout': 1, 'stderr': 1})
-        s._sock.setblocking(True)  # might not be necessary
+        s._sock.setblocking(True)
         return s
 
     def close_socket_to_container(self, s):
-        s._sock.sendall(("\x04").encode())  # ctrl d to finish things up
+        s._sock.sendall(CTRLD)  # ctrl d to finish things up
         s._sock.close()
+        self.container.stop()
+        self.client.close()
 
     def write_to_socket_to_container(self, s, binary_textline):
         s._sock.sendall(binary_textline)
-
+        s.flush()
     # Given configuration, obtain the Airbyte Catalog, which includes list of datasets
     def get_catalog(self):
         return self.run_container('discover --config ' + self.name_in_container(self.conf_file.name))
@@ -268,7 +269,6 @@ class GenericConnector:
             bytesToWrite -= readSize
             payload = fptr.read(int(readSize))
             self.write_to_socket_to_container(s, payload)
-        time.sleep(5)  # need to give time for write to complete
         self.close_socket_to_container(s)
         tmp_catalog.close()
         return 200  # Need to figure out how to handle error return
