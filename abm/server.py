@@ -50,6 +50,33 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(HTTPStatus.BAD_REQUEST)
                 self.end_headers()
 
+# Have the same routine for PUT and POST
+    def do_WRITE(self):
+        logger.info('write requested')
+        with Config(self.config_path) as config:
+            asset_name = self.path.lstrip('/')
+            try:
+                asset_conf = config.for_asset(asset_name)
+                connector = GenericConnector(asset_conf, logger, self.workdir)
+            except ValueError:
+                logger.error('asset ' + asset_name + ' not found or malformed configuration')
+                self.send_response(HTTPStatus.NOT_FOUND)
+                self.end_headers()
+                return
+            # Change to allow for streaming reads
+            read_length = self.headers.get('Content-Length')
+            if connector.write_dataset(self.rfile, int(read_length)):
+                self.send_response(HTTPStatus.OK)
+            else:
+                self.send_response(HTTPStatus.BAD_REQUEST)
+            self.end_headers()
+
+    def do_PUT(self):
+        self.do_WRITE()
+
+    def do_POST(self):
+        self.do_WRITE()
+
 class ABMHttpServer(socketserver.TCPServer):
     def __init__(self, server_address, RequestHandlerClass,
                  config_path, workdir):

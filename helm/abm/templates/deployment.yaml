@@ -47,7 +47,7 @@ spec:
             - name: docker-socket
               mountPath: /var/run
             - name: json-dir
-              mountPath: /json
+              mountPath: /local
         - name: docker-daemon
           image: docker:20.10.7-dind
           securityContext:
@@ -56,7 +56,7 @@ spec:
             - name: docker-socket
               mountPath: /var/run
             - name: json-dir
-              mountPath: /json
+              mountPath: /local
       volumes:
         - name: config
           configMap:

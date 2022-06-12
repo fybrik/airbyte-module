@@ -22,7 +22,7 @@ if __name__ == '__main__':
         '-l', '--loglevel', type=str, default='warning', help='logging level', 
         choices=['trace', 'info', 'debug', 'warning', 'error', 'critical'])
     parser.add_argument(
-        '-w', '--workdir', type=str, default='/json', help='writable directory for temporary files')
+        '-w', '--workdir', type=str, default='/local', help='writable directory for temporary files')
     args = parser.parse_args()
 
     # start the HTTP server in a separate thread
