@@ -10,7 +10,7 @@ spec:
   chart:
     name: ghcr.io/fybrik/airbyte-module-chart:0.0.0-main
     values:
-      image.tag: 0.0.0
+      image.tag: main
   capabilities:
     - capability: read
       scope: workload
