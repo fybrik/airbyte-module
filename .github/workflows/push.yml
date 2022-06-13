@@ -3,7 +3,7 @@ name: Push
 on:
   push:
     branches:
-      - '*'
+      - 'main'
     tags:
       - '*'
 
@@ -19,30 +19,25 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    # Versions are created as follows (In helm 3.7 OCI reference tags must be valid SemVer):
+    # Versions are created as follows (In helm 3.7 and above OCI reference tags
+    # must be valid SemVer):
     # - Tags starting with v will be released as what comes after `v`. (e.g. refs/tags/v1.0 -> 1.0).
-    # - Release branches will be released as the release number (e.g. refs/heads/releases/1.0 -> 1.0-rc).
-    # - Other branches (e.g. main) will be released with branch name as version for the docker images.
-    #   For the helm chart OCI reference tag 0.0.0-<branch-name> will be used.
+    # - Main branch will be released with `main` as version tag for the docker images and
+    #   `0.0.0-main` tag for helm chart.
     - id: version
       name: Infer version
       run: |
-        version="${GITHUB_REF#refs/tags/v}"
-        echo "HELM_TAG=${version}" >> $GITHUB_ENV
-        if  [[ $version == refs/* ]] ;
+        if [[ ${GITHUB_REF} == refs/tags/* ]] ;
         then
-            branch="${GITHUB_REF#refs/heads/}"
-            version=$branch
-            # helm 3.7 chart tag must be semver
-            echo "HELM_TAG=0.0.0-${version}" >> $GITHUB_ENV
-        fi
-        if [[ $version == releases/* ]] ;
+            version="${GITHUB_REF#refs/tags/v}"
+            echo "HELM_TAG=${version}" >> $GITHUB_ENV
+        elif  [[ ${GITHUB_REF} == refs/heads/main ]] ;
         then
-           releaseVersion="${GITHUB_REF#refs/heads/releases/}"
-           version="$releaseVersion-rc"
-           echo "HELM_TAG=$releaseVersion-rc" >> $GITHUB_ENV
+            version=main
+            echo "HELM_TAG=0.0.0-main" >> $GITHUB_ENV
         fi
-        echo "DOCKER_TAG=$version" >> $GITHUB_ENV
+        echo ::set-output name=version::$version
+        echo "DOCKER_TAG=${version}" >> $GITHUB_ENV
     - name: Helm tool installer
       uses: Azure/setup-helm@v1
       with:
