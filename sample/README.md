@@ -16,15 +16,15 @@ Arrow Flight server (on port 8081)
     ```bash
     pipenv install
     ```
-2. Run the server with
+1. Run the server with
     ```bash
     pipenv run server --config sample/sample.yaml  --workdir /tmp
     ```
-3. Read the `userdata` dataset from HTTP server:
+1. Read the `userdata` dataset from HTTP server:
     ```bash
     curl localhost:8080/userdata
     ```
-4. Read the `userdata` dataset from the arrow-flight server:
+1. Read the `userdata` dataset from the arrow-flight server:
    ```bash
    pipenv run python sample/sample.py
     ```
@@ -33,7 +33,6 @@ Arrow Flight server (on port 8081)
 1. Run the server with
     ```bash
     pipenv run server --config sample/write_config.yaml  --workdir /tmp
-2. Send the information to be written to the server
+1. Send the information to be written to the server
    sample/post.sh
-3. Check the output in /tmp/airbyte_out
-
+1. Check the output in /tmp/airbyte_out
