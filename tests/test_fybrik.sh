@@ -11,6 +11,7 @@ export PATH=$TOOLBIN:$PATH
 
 kubernetesVersion=$1
 certManagerVersion=$2
+moduleVersion=$3
 
 if [ $kubernetesVersion == "kind19" ]
 then
@@ -77,7 +78,7 @@ popd
 # Related to https://github.com/cert-manager/cert-manager/issues/2908
 # Fybrik webhook not really ready after "helm install --wait"
 # A workaround is to loop until the module is applied as expected
-CMD="kubectl apply -f $AIRBYTE_FYBRIK_TEST/../module.yaml -n fybrik-system
+CMD="kubectl apply -f https://github.com/fybrik/airbyte-module/releases/download/v$moduleVersion/module.yaml -n fybrik-system
 "
 count=0
 until $CMD
