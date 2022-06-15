@@ -10,19 +10,30 @@ The Airbyte server is both an HTTP server (on port 8080) and an
 Arrow Flight server (on port 8081)
 
 ## Steps
+### Read example
+
 1. Install python dependencies
     ```bash
     pipenv install
     ```
-1. Run the server with
+2. Run the server with
     ```bash
     pipenv run server --config sample/sample.yaml  --workdir /tmp
     ```
-1. Read the `userdata` dataset from HTTP server:
+3. Read the `userdata` dataset from HTTP server:
     ```bash
     curl localhost:8080/userdata
     ```
-1. Read the `userdata` dataset from the arrow-flight server:
+4. Read the `userdata` dataset from the arrow-flight server:
    ```bash
    pipenv run python sample/sample.py
     ```
+
+### Write example
+1. Run the server with
+    ```bash
+    pipenv run server --config sample/write_config.yaml  --workdir /tmp
+2. Send the information to be written to the server
+   sample/post.sh
+3. Check the output in /tmp/airbyte_out
+
