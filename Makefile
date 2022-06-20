@@ -23,8 +23,7 @@ build:
 	docker build -f build/Dockerfile . -t ${IMG}
 	rm requirements.txt
 
-	cd helm/client
-	docker build --tag ${CLIENT_IMG} .
+	cd helm/client; docker build --tag ${CLIENT_IMG} .
 
 .PHONY: docker-push
 docker-push:
