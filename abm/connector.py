@@ -26,7 +26,19 @@ class GenericConnector:
             raise ValueError("'connector' field missing from configuration")
 
         self.workdir = workdir
-        self.client = docker.from_env()
+    # Potentially the fybrik-blueprint pod for the airbyte module can start before the docker daemon pod, causing
+    # docker.from_env() to fail
+        retryLoop = 0
+        while retryLoop < 10:
+            try:
+                self.client = docker.from_env()
+            except Exception as e:
+                print('error on docker.from_env() ' + str(e) + ' sleep and retry.  Retry count = ' + str(retryLoop))
+                time.sleep(1)
+                retryLoop += 1
+            else:
+                retryLoop = 10
+
         self.connector = self.config['connector']
 
         # The content of self.config will be written to a temporary json file,
