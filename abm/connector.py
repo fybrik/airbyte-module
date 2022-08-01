@@ -296,4 +296,3 @@ class GenericConnector:
         self.write_to_socket_to_container(socket, record)
         # TODO: Need to figure out how to handle error return
         return True
-
