@@ -146,6 +146,23 @@ class ABMFlightServer(fl.FlightServerBase):
         return fl.GeneratorStream(schema, batches)
 
     '''
+    Serve arrow flight do_put requests
+    '''
+    def do_put(self, context, descriptor, reader, writer):
+        asset_name = json.loads(descriptor.command)['asset']
+        logger.info('getting flight information',
+            extra={'command': descriptor.command,
+                   DataSetID: asset_name,
+                   ForUser: True})
+        with Config(self.config_path) as config:
+            asset_conf = config.for_asset(asset_name)
+            connector = GenericConnector(asset_conf, logger, self.workdir)
+            read_pandas = reader.read_pandas()
+            df_byte = read_pandas.to_json(orient='records').encode()
+            print(df_byte)
+            connector.write_dataset_bytes(df_byte)
+
+    '''
     Serve arrow-flight get_flight_info requests.
     Determine dataset schema.
     Return flight info with single ticket for entire dataset.
