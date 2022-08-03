@@ -164,6 +164,7 @@ class ABMFlightServer(fl.FlightServerBase):
                    DataSetID: asset_name,
                    ForUser: True})
         with Config(self.config_path) as config:
+            df_bytes = []
             asset_conf = config.for_asset(asset_name)
             connector = GenericConnector(asset_conf, logger, self.workdir)
             batches = reader.read_all().combine_chunks().to_batches(max_chunksize=1)
