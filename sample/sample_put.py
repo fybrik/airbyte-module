@@ -29,10 +29,11 @@ request = {
 
 def main(port):
     client = fl.connect("grpc://localhost:{}".format(port))
-    arrays = [["RECORD"], [{"stream": "airlines","data": {"id": 11,"name": "gg"}, "emitted_at": 1650284493000}]]
+    arrays = [["RECORD", "RECORD", "RECORD"], [{"stream": "testing","data": {"DOB": "01/02/1992", "FirstName": "John", "LastNAME":"Jones"}, "emitted_at": 0},
+                                     {"stream": "testing","data": {"DOB": "01/02/1994", "FirstName": "Ludwig", "LastNAME":"Beethoven"}, "emitted_at": 0},
+                                     {"stream": "testing","data": {"DOB": "01/02/1995", "FirstName": "Frank", "LastNAME":"Sinatra"}, "emitted_at": 0}]]
     names = ["type", "record"]
     data = pa.Table.from_arrays(arrays, names=names)
-    print(data)
     writer, _ = client.do_put(fl.FlightDescriptor.for_command(json.dumps(request)),
                               data.schema)
     writer.write_table(data, 1024)

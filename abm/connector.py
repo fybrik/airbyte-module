@@ -271,46 +271,21 @@ class GenericConnector:
         template = '{ \
         "streams": [{ \
                 "sync_mode": "full_refresh", \
-                "destination_sync_mode": "append", \
+                "destination_sync_mode": "overwrite", \
                 "stream": { \
-                "name": "airlines", \
-                "supported_sync_modes": [ \
-                    "full_refresh" \
-                ], \
-                "json_schema": { \
-                    "type": "object", \
-                    "properties": { \
-                    "id": { \
-                        "type": "number" \
-                    }, \
-                    "name": { \
-                        "type": "string" \
-                    } \
-                    } \
+                        "name": "' + stream_name + '", \
+                        "json_schema": { \
+                            "$schema": "http://json-schema.org/draft-07/schema#", \
+                            "type": "object", \
+                            "properties": { \
+                            } \
+                        }, \
+                        "supported_sync_modes": [ \
+                                "full_refresh" \
+                        ] \
                 } \
-                } \
-            } \
-            ] \
+            }] \
         }'
-
-        # template = '{ \
-        # "streams": [{ \
-        #         "sync_mode": "full_refresh", \
-        #         "destination_sync_mode": "overwrite", \
-        #         "stream": { \
-        #                 "name": "' + stream_name + '", \
-        #                 "json_schema": { \
-        #                         "$schema": "http://json-schema.org/draft-07/schema#", \
-        #                         "type": "object", \
-        #                         "properties": { \
-        #                         } \
-        #                 }, \
-        #                 "supported_sync_modes": [ \
-        #                         "full_refresh" \
-        #                 ] \
-        #         } \
-        #     }] \
-        # }'
 
         tmp_catalog = tempfile.NamedTemporaryFile(dir=self.workdir, mode='w+t')
         tmp_catalog.writelines(template)
@@ -341,7 +316,6 @@ class GenericConnector:
 
     def write_dataset_bytes(self, bytes):
         self.logger.debug('write bytes requested')
-        print(bytes[1:-1] + b'\n')
         # The catalog to be provided to the write command is from a template -
         # there is no discover on the write
         tmp_catalog = self.create_write_catalog()
@@ -350,7 +324,8 @@ class GenericConnector:
                   ' --catalog ' + self.name_in_container(tmp_catalog.name)
         s, container = self.open_socket_to_container(command)
 
-        self.write_to_socket_to_container(s, bytes[1:-1] + b'\n')
+        for record in bytes:
+            self.write_to_socket_to_container(s, record[1:-1] + b'\n')
 
         self.close_socket_to_container(s, container)
         tmp_catalog.close()

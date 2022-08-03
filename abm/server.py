@@ -155,12 +155,13 @@ class ABMFlightServer(fl.FlightServerBase):
                    DataSetID: asset_name,
                    ForUser: True})
         with Config(self.config_path) as config:
+            df_bytes = []
             asset_conf = config.for_asset(asset_name)
             connector = GenericConnector(asset_conf, logger, self.workdir)
-            read_pandas = reader.read_pandas()
-            df_byte = read_pandas.to_json(orient='records').encode()
-            print(df_byte)
-            connector.write_dataset_bytes(df_byte)
+            batches = reader.read_all().combine_chunks().to_batches(max_chunksize=1)
+            for batch in batches:
+                df_bytes.append(batch.to_pandas().to_json(orient='records').encode())
+            connector.write_dataset_bytes(df_bytes)
 
     '''
     Serve arrow-flight get_flight_info requests.
