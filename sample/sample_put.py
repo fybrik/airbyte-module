@@ -24,7 +24,7 @@ class HttpBasicClientAuthHandler(fl.ClientAuthHandler):
         return self.token
 
 request = {
-    "asset": "userdata",
+    "asset": "write_test",
 }
 
 def main(port):

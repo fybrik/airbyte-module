@@ -293,28 +293,19 @@ class GenericConnector:
         return tmp_catalog
 
     def write_dataset(self, fptr, length):
-        self.logger.debug('write requested')
-        # The catalog to be provided to the write command is from a template -
-        # there is no discover on the write
-        tmp_catalog = self.create_write_catalog()
-
-        command = 'write --config ' + self.name_in_container(self.conf_file.name) + \
-                  ' --catalog ' + self.name_in_container(tmp_catalog.name)
-        s, container = self.open_socket_to_container(command)
-
         # eg echo payload | docker run -v /Users/eliot/temp:/local -i airbyte/destination-local-json write --catalog /local/airbyte_catalog.txt --config /local/airbyte_write1.json
+        bytesList = []
         bytesToWrite = length
         while bytesToWrite > 0:
             readSize = CHUNKSIZE if (bytesToWrite - CHUNKSIZE) >= 0 else bytesToWrite
             bytesToWrite -= readSize
             payload = fptr.read(int(readSize))
-            self.write_to_socket_to_container(s, payload)
-        self.close_socket_to_container(s, container)
-        tmp_catalog.close()
+            bytesList.append(payload)
+        self.write_dataset_bytes(bytesList)
         # TODO: Need to figure out how to handle error return
         return True
 
-    def write_dataset_bytes(self, bytes):
+    def write_dataset_bytes(self, bytes, reformat=False):
         self.logger.debug('write bytes requested')
         # The catalog to be provided to the write command is from a template -
         # there is no discover on the write
@@ -325,7 +316,9 @@ class GenericConnector:
         s, container = self.open_socket_to_container(command)
 
         for record in bytes:
-            self.write_to_socket_to_container(s, record[1:-1] + b'\n')
+            if reformat:
+                record = record[1:-1] + b'\n'
+            self.write_to_socket_to_container(s, record)
 
         self.close_socket_to_container(s, container)
         tmp_catalog.close()
