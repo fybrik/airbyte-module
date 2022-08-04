@@ -3,6 +3,7 @@
 set -x
 set -e
 
+export AIRBYTE_MODULE_DIR=$PWD
 export WORKING_DIR=$PWD/tests/dataset
 export TOOLBIN=$PWD/hack/tools/bin
 export AIRBYTE_FYBRIK_TEST=$PWD/fybrik
@@ -97,7 +98,7 @@ popd
 # Related to https://github.com/cert-manager/cert-manager/issues/2908
 # Fybrik webhook not really ready after "helm install --wait"
 # A workaround is to loop until the module is applied as expected
-CMD="kubectl apply -f https://github.com/fybrik/airbyte-module/releases/download/v$moduleVersion/module.yaml -n fybrik-system
+CMD="kubectl apply -f $AIRBYTE_MODULE_DIR/module.yaml -n fybrik-system
 "
 count=0
 until $CMD
