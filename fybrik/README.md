@@ -33,13 +33,18 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
    kubectl config set-context --current --namespace=fybrik-airbyte-sample
    ```
 
-1. Create an asset (the `userdata` asset), the policy to access it (we use a policy that does not restrict access nor mandate any transformations), and an application that requires this asset:
+1. Create a policy to allow access any asset (we use a policy that does not restrict access nor mandate any transformations):
    ```bash
-   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/asset.yaml
    kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_MODULE_DIR/fybrik/sample-policy.rego
    kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego
    while [[ $(kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
-   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/application.yaml
+   ```
+
+
+1. Create an asset (the `userdata` asset) and an application that requires this asset:
+   ```bash
+   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/read-flow/asset.yaml
+   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/read-flow/application.yaml
    ```
 
 1. After the application is created, the Fybrik manager attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the `userdata` dataset, and deploys it in the `fybrik-blueprints` namespace. To verify that the Airbyte module was indeed deployed, run:
@@ -53,3 +58,44 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
    ./deploy_airbyte_module_client_pod.sh
    kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata
    ```
+
+# Writing Dataset with Fybrik Application
+
+In this example, a small `userdata` dataset is written to a directory on the local filesystem on the host running Airbyte. To do so a FybrikApplication (i.e. the request) must be submitted indicating the desired data set(s) to be written.
+
+As above, you will need a copy of the Fybrik repository (`git clone https://github.com/fybrik/fybrik.git`). Set the following environment variables: FYBRIK_DIR for the path of the `fybrik` directory, and AIRBYTE_MODULE_DIR for the path of the `airbyte-module` directory.
+
+Repeat steps 1-5 above.
+
+6. Create an asset (the `userdata` asset), the policy to access it (we use a policy that does not restrict access nor mandate any transformations), and an application that requires this asset:
+   ```bash
+   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/asset.yaml
+   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/application.yaml
+   ```
+
+1. After the application is created, the Fybrik manager attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the `userdata` dataset, and deploys it in the `fybrik-blueprints` namespace. To verify that the Airbyte module was indeed deployed, run:
+   ```bash
+   kubectl get pods -n fybrik-blueprints
+   ```
+
+1. To verify that the Airbyte module writes the dataset, run:
+   ```bash
+   cd $AIRBYTE_MODULE_DIR/helm/client
+   ./deploy_airbyte_module_client_pod.sh
+   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata --operation put
+   export AIRBYTE_POD_NAME=$(kubectl get pods -n fybrik-blueprints | grep airbyte |awk '{print $1}')
+   kubectl exec $AIRBYTE_POD_NAME -n fybrik-blueprints -- cat /local/airbyte_out/_airbyte_raw_testing.jsonl
+   ```
+
+
+# Cleanup
+
+When you're finished experimenting with a sample, you may clean up as follows:
+
+Delete the namespace created for this sample:
+
+```bash
+kubectl delete namespace fybrik-airbyte-sample
+```
+
+

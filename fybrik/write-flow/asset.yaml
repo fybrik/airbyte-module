@@ -1,0 +1,28 @@
+apiVersion: katalog.fybrik.io/v1alpha1
+kind: Asset
+metadata:
+  name: userdata
+spec:
+  secretRef: 
+    name: fake-secret
+  details:
+    connection:
+      name: file
+      file:
+        connector: airbyte/destination-local-json
+        destination_path: airbyte_out
+  metadata:
+    name: test data
+    geography: theshire 
+    tags:
+      finance: true
+    columns:
+      - name: DOB
+        tags:
+          PII: true
+      - name: FirstName
+        tags:
+          PII: true
+      - name: LastNAME
+        tags:
+          PII: true

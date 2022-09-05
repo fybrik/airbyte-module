@@ -24,7 +24,34 @@ class HttpBasicClientAuthHandler(fl.ClientAuthHandler):
         return self.token
 
 request = {
-    "asset": "write_test",
+    "asset": "userdata",
+    "schema": '{ \
+        "streams": [{ \
+                "sync_mode": "full_refresh", \
+                "destination_sync_mode": "overwrite", \
+                "stream": { \
+                        "name": "revital76", \
+                        "json_schema": { \
+                            "$schema": "http://json-schema.org/draft-07/schema#", \
+                            "type": "object", \
+                            "properties": { \
+                                "DOB": { \
+                                    "type": "string" \
+                                }, \
+                                "FirstName": { \
+                                    "type": "string" \
+                                }, \
+                                "LastNAME": { \
+                                    "type": "string" \
+                                } \
+                            } \
+                        }, \
+                        "supported_sync_modes": [ \
+                                "full_refresh" \
+                        ] \
+                } \
+            }] \
+        }'
 }
 
 def main(port):
@@ -45,5 +72,4 @@ if __name__ == "__main__":
     parser.add_argument(
         '--port', type=int, default=8081, help='Listening port')
     args = parser.parse_args()
-
     main(args.port)

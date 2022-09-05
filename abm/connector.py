@@ -267,49 +267,20 @@ class GenericConnector:
     '''
     Creates a template catalog for write connectors
     '''
-    def create_write_catalog(self, stream_name='testing'):
-        template = '{ \
-        "streams": [{ \
-                "sync_mode": "full_refresh", \
-                "destination_sync_mode": "overwrite", \
-                "stream": { \
-                        "name": "' + stream_name + '", \
-                        "json_schema": { \
-                            "$schema": "http://json-schema.org/draft-07/schema#", \
-                            "type": "object", \
-                            "properties": { \
-                            } \
-                        }, \
-                        "supported_sync_modes": [ \
-                                "full_refresh" \
-                        ] \
-                } \
-            }] \
-        }'
-
+    def create_write_catalog(self, schema):
         tmp_catalog = tempfile.NamedTemporaryFile(dir=self.workdir, mode='w+t')
-        tmp_catalog.writelines(template)
+        tmp_catalog.writelines(schema)
         tmp_catalog.flush()
         return tmp_catalog
 
-    def write_dataset(self, fptr, length):
-        # eg echo payload | docker run -v /Users/eliot/temp:/local -i airbyte/destination-local-json write --catalog /local/airbyte_catalog.txt --config /local/airbyte_write1.json
-        bytesList = []
-        bytesToWrite = length
-        while bytesToWrite > 0:
-            readSize = CHUNKSIZE if (bytesToWrite - CHUNKSIZE) >= 0 else bytesToWrite
-            bytesToWrite -= readSize
-            payload = fptr.read(int(readSize))
-            bytesList.append(payload)
-        self.write_dataset_bytes(bytesList)
-        # TODO: Need to figure out how to handle error return
-        return True
-
-    def write_dataset_bytes(self, bytes, reformat=False):
+    '''
+    Write dataset passed as list of bytes.
+    '''
+    def write_dataset_bytes(self, bytes, schema: str, reformat=False):
         self.logger.debug('write bytes requested')
         # The catalog to be provided to the write command is from a template -
         # there is no discover on the write
-        tmp_catalog = self.create_write_catalog()
+        tmp_catalog = create_write_catalog(schema)
 
         command = 'write --config ' + self.name_in_container(self.conf_file.name) + \
                   ' --catalog ' + self.name_in_container(tmp_catalog.name)
@@ -320,6 +291,23 @@ class GenericConnector:
                 record = record[1:-1] + b'\n'
             self.write_to_socket_to_container(s, record)
 
+        self.close_socket_to_container(s, container)
+        tmp_catalog.close()
+        # TODO: Need to figure out how to handle error return
+        return True
+
+    '''
+    Write dataset passed as JSON structure.
+    '''
+    def write_dataset_json(self, data, schema: str):
+        # eg echo payload | docker run -v /Users/eliot/temp:/local -i airbyte/destination-local-json write --catalog /local/airbyte_catalog.txt --config /local/airbyte_write1.json
+        tmp_catalog = create_write_catalog(schema)
+        command = 'write --config ' + self.name_in_container(self.conf_file.name) + \
+                  ' --catalog ' + self.name_in_container(tmp_catalog.name)
+        s, container = self.open_socket_to_container(command)
+        bytes = data.encode()
+        bytes = bytes + b'\n'
+        self.write_to_socket_to_container(s,  bytes)
         self.close_socket_to_container(s, container)
         tmp_catalog.close()
         # TODO: Need to figure out how to handle error return
