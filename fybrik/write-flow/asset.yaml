@@ -6,6 +6,7 @@ spec:
   secretRef: 
     name: fake-secret
   details:
+    dataFormat: csv
     connection:
       name: file
       file:
