@@ -24,13 +24,13 @@ class HttpBasicClientAuthHandler(fl.ClientAuthHandler):
         return self.token
 
 request = {
-    "asset": "userdata",
+    "asset": "write_test",
     "schema": '{ \
         "streams": [{ \
                 "sync_mode": "full_refresh", \
                 "destination_sync_mode": "overwrite", \
                 "stream": { \
-                        "name": "revital76", \
+                        "name": "testing", \
                         "json_schema": { \
                             "$schema": "http://json-schema.org/draft-07/schema#", \
                             "type": "object", \

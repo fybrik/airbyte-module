@@ -51,13 +51,13 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(HTTPStatus.BAD_REQUEST)
                 self.end_headers()
 
-# Have the same routine for PUT and POST
+    # Have the same routine for PUT and POST
     def do_WRITE(self):
         self.data_string = self.rfile.read(int(self.headers['Content-Length']))
-        print(self.data_string)
+        logger.info(self.data_string)
         json_file = simplejson.loads(self.data_string)
-        data = json.dumps(json_file['data'])
         schema = json.dumps(json_file['schema'])
+        data = json_file['data']
         with Config(self.config_path) as config:
             asset_name = self.path.lstrip('/')
             try:
@@ -68,12 +68,15 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(HTTPStatus.NOT_FOUND)
                 self.end_headers()
                 return
-            # Change to allow for streaming reads
-            read_length = self.headers.get('Content-Length')
-            if connector.write_dataset_json(data, schema):
-               self.send_response(HTTPStatus.OK)
-            else:
-                self.send_response(HTTPStatus.BAD_REQUEST)
+            command, catalog = connector.create_write_command(schema)
+            socket, container = connector.open_socket_to_container(command)
+            for record in data:
+                bytes = json.dumps(record).encode()
+                if connector.write_dataset_bytes(socket, bytes, False) == False:
+                    self.send_response(HTTPStatus.BAD_REQUEST)
+            connector.close_socket_to_container(socket, container)
+            catalog.close()
+            self.send_response(HTTPStatus.OK)
             self.end_headers()
 
     def do_PUT(self):
@@ -161,13 +164,16 @@ class ABMFlightServer(fl.FlightServerBase):
                    DataSetID: asset_name,
                    ForUser: True})
         with Config(self.config_path) as config:
-            df_bytes = []
             asset_conf = config.for_asset(asset_name)
             connector = GenericConnector(asset_conf, logger, self.workdir)
             batches = reader.read_all().combine_chunks().to_batches(max_chunksize=1)
+            command, catalog = connector.create_write_command(schema)
+            socket, container = connector.open_socket_to_container(command)
             for batch in batches:
-                df_bytes.append(batch.to_pandas().to_json(orient='records').encode())
-            connector.write_dataset_bytes(df_bytes, schema, True)
+                connector.write_dataset_bytes(socket, batch.to_pandas().to_json(orient='records').encode(), True)
+            connector.close_socket_to_container(socket, container)
+            catalog.close()
+            
 
     '''
     Serve arrow-flight get_flight_info requests.

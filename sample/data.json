@@ -1,4 +1,4 @@
-{"data": {"type": "RECORD","record": {"stream": "testing","data": {"DOB": "01/02/1988","FirstName": "John","LastNAME":"nini"},"emitted_at": 1650284493000}},
+{"data": [{"type": "RECORD","record": {"stream": "testing","data": {"DOB": "01/02/1988","FirstName": "John","LastNAME":"nini"},"emitted_at": 1650284493000}}],
 "schema": {
         "streams": [{
                 "sync_mode": "full_refresh",
