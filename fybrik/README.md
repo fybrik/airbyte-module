@@ -80,10 +80,10 @@ Repeat steps 1-5 above.
 
 1. To verify that the Airbyte module writes the dataset, run:
    ```bash
+   export AIRBYTE_POD_NAME=$(kubectl get pods -n fybrik-blueprints | grep airbyte |awk '{print $1}')
    cd $AIRBYTE_MODULE_DIR/helm/client
    ./deploy_airbyte_module_client_pod.sh
    kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata --operation put
-   export AIRBYTE_POD_NAME=$(kubectl get pods -n fybrik-blueprints | grep airbyte |awk '{print $1}')
    kubectl exec $AIRBYTE_POD_NAME -n fybrik-blueprints -- cat /local/airbyte_out/_airbyte_raw_testing.jsonl
    ```
 
@@ -96,6 +96,14 @@ Delete the namespace created for this sample:
 
 ```bash
 kubectl delete namespace fybrik-airbyte-sample
+```
+
+To experiment with a sample after the deletion of `fybrik-airbyte-sample` namespace,
+re-create the namspace with the following commands and continue from step 6 in the chosen sample.
+
+```bash
+kubectl create namespace fybrik-airbyte-sample
+kubectl config set-context --current --namespace=fybrik-airbyte-sample
 ```
 
 
