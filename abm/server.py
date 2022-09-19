@@ -72,7 +72,7 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
             socket, container = connector.open_socket_to_container(command)
             for record in data:
                 bytes = json.dumps(record).encode()
-                if connector.write_dataset_bytes(socket, bytes, False) == False:
+                if connector.write_dataset_bytes(socket, bytes) == False:
                     self.send_response(HTTPStatus.BAD_REQUEST)
             connector.close_socket_to_container(socket, container)
             catalog.close()
@@ -166,11 +166,21 @@ class ABMFlightServer(fl.FlightServerBase):
         with Config(self.config_path) as config:
             asset_conf = config.for_asset(asset_name)
             connector = GenericConnector(asset_conf, logger, self.workdir)
-            batches = reader.read_all().combine_chunks().to_batches(max_chunksize=1)
             command, catalog = connector.create_write_command(schema)
             socket, container = connector.open_socket_to_container(command)
-            for batch in batches:
-                connector.write_dataset_bytes(socket, batch.to_pandas().to_json(orient='records').encode(), True)
+            idx = 0
+            record_reader = reader.to_reader()
+            while True:
+                try:
+                  batch = record_reader.read_next_batch()
+                  connector.write_dataset_bytes(socket, batch.to_pandas().to_json(orient='records', lines=True).encode())
+                  idx += 1
+                except StopIteration:
+                    logger.info('total number of chunks read:' + str(idx))
+                    break
+                except BaseException as err:
+                    logger.error(f"Unexpected {err=}, {type(err)=}")
+                    raise
             connector.close_socket_to_container(socket, container)
             catalog.close()
             
