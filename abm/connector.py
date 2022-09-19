@@ -288,10 +288,8 @@ class GenericConnector:
     '''
     Write dataset passed as bytes
     '''
-    def write_dataset_bytes(self, socket, bytes, reformat=False):
+    def write_dataset_bytes(self, socket, bytes):
         self.logger.debug('write bytes requested')
-        if reformat:
-            bytes = bytes[1:-1]
         record = bytes + b'\n'
         self.write_to_socket_to_container(socket, record)
         # TODO: Need to figure out how to handle error return
