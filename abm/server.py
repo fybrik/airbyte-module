@@ -53,11 +53,8 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
 
     # Have the same routine for PUT and POST
     def do_WRITE(self):
-        self.data_string = self.rfile.read(int(self.headers['Content-Length']))
-        logger.info(self.data_string)
-        json_file = simplejson.loads(self.data_string)
-        schema = json.dumps(json_file['schema'])
-        data = json_file['data']
+        logger.info('http write requested')
+        schema = json.dumps(json.loads(self.headers['schema']))
         with Config(self.config_path) as config:
             asset_name = self.path.lstrip('/')
             try:
@@ -68,15 +65,11 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(HTTPStatus.NOT_FOUND)
                 self.end_headers()
                 return
-            command, catalog = connector.create_write_command(schema)
-            socket, container = connector.open_socket_to_container(command)
-            for record in data:
-                bytes = json.dumps(record).encode()
-                if connector.write_dataset_bytes(socket, bytes) == False:
-                    self.send_response(HTTPStatus.BAD_REQUEST)
-            connector.close_socket_to_container(socket, container)
-            catalog.close()
-            self.send_response(HTTPStatus.OK)
+            read_length = self.headers.get('Content-Length')
+            if connector.write_dataset(schema, self.rfile, int(read_length)):
+                self.send_response(HTTPStatus.OK)
+            else:
+                self.send_response(HTTPStatus.BAD_REQUEST)
             self.end_headers()
 
     def do_PUT(self):

@@ -277,7 +277,7 @@ class GenericConnector:
     Creates a write command
     '''
     def create_write_command(self, schema):
-        # The catalog to be provided to the write command is from a template -
+        # The catalog to be provided to the write command is from an input schema -
         # there is no discover on the write
         tmp_catalog = self.create_write_catalog(schema)
 
@@ -285,6 +285,29 @@ class GenericConnector:
                   ' --catalog ' + self.name_in_container(tmp_catalog.name)
         return command, tmp_catalog
 
+    '''
+    Write dataset passed as file
+    '''
+    def write_dataset(self, schema, fptr, length):
+        self.logger.debug('write requested')
+        # The catalog to be provided to the write command is from an input schema -
+        # there is no discover on the write
+        tmp_catalog = self.create_write_catalog(schema)
+        command = 'write --config ' + self.name_in_container(self.conf_file.name) + \
+                  ' --catalog ' + self.name_in_container(tmp_catalog.name)
+        s, container = self.open_socket_to_container(command)
+
+        bytesToWrite = length
+        while bytesToWrite > 0:
+            readSize = CHUNKSIZE if (bytesToWrite - CHUNKSIZE) >= 0 else bytesToWrite
+            bytesToWrite -= readSize
+            payload = fptr.read(int(readSize))
+            print(payload)
+            self.write_to_socket_to_container(s, payload)
+        self.close_socket_to_container(s, container)
+        tmp_catalog.close()
+        # TODO: Need to figure out how to handle error return
+        return True
     '''
     Write dataset passed as bytes
     '''
