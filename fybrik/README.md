@@ -33,7 +33,7 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
    kubectl config set-context --current --namespace=fybrik-airbyte-sample
    ```
 
-1. Create a policy to allow access any asset (we use a policy that does not restrict access nor mandate any transformations):
+1. Create a policy to allow access to any asset (we use a policy that does not restrict access nor mandate any transformations):
    ```bash
    kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_MODULE_DIR/fybrik/sample-policy.rego
    kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego
@@ -99,7 +99,7 @@ kubectl delete namespace fybrik-airbyte-sample
 ```
 
 To experiment with a sample after the deletion of `fybrik-airbyte-sample` namespace,
-re-create the namspace with the following commands and continue from step 6 in the chosen sample.
+re-create the namespace with the following commands and continue from step 6 in the chosen sample.
 
 ```bash
 kubectl create namespace fybrik-airbyte-sample

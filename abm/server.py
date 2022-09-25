@@ -150,8 +150,14 @@ class ABMFlightServer(fl.FlightServerBase):
     Serve arrow flight do_put requests
     '''
     def do_put(self, context, descriptor, reader, writer):
-        asset_name = json.loads(descriptor.command)['asset']
-        schema = json.loads(descriptor.command)['schema']
+        try:
+            command = json.loads(descriptor.command)
+            asset_name = command['asset']
+            schema = command['schema']
+        except BaseException as err:
+            logger.error(f"Unexpected {err=}, {type(err)=}")
+            raise
+
         logger.info('getting flight information',
             extra={'command': descriptor.command,
                    DataSetID: asset_name,

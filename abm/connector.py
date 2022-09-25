@@ -302,7 +302,6 @@ class GenericConnector:
             readSize = CHUNKSIZE if (bytesToWrite - CHUNKSIZE) >= 0 else bytesToWrite
             bytesToWrite -= readSize
             payload = fptr.read(int(readSize))
-            print(payload)
             self.write_to_socket_to_container(s, payload)
         self.close_socket_to_container(s, container)
         tmp_catalog.close()
