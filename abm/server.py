@@ -54,7 +54,11 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
     # Have the same routine for PUT and POST
     def do_WRITE(self):
         logger.info('http write requested')
-        schema = json.dumps(json.loads(self.headers['schema']))
+        try:
+            schema = json.dumps(json.loads(self.headers['schema']))
+        except BaseException as err:
+            logger.error(f"Unexpected {err=}, {type(err)=}")
+            raise
         with Config(self.config_path) as config:
             asset_name = self.path.lstrip('/')
             try:
