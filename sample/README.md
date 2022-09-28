@@ -33,6 +33,14 @@ Arrow Flight server (on port 8081)
 1. Run the server with
     ```bash
     pipenv run server --config sample/write_config.yaml  --workdir /tmp
-1. Send the information to be written to the server
+    ```
+1. Send the information to be written to the server:
+   ```bash
    sample/post.sh
+   ```
+1. Check the output in /tmp/airbyte_out
+1. Send the information to be written to the server using arrow-flight:
+   ```bash
+   pipenv run python sample/sample_put.py
+   ```
 1. Check the output in /tmp/airbyte_out

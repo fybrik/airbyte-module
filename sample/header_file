@@ -1,0 +1,2 @@
+Content-Type: application/json,
+schema: {"streams": [{"sync_mode": "full_refresh", "destination_sync_mode": "overwrite", "stream": {"name": "testing", "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#","type": "object", "properties": {"DOB": {"type": "string"},"FirstName": {"type": "string"},"LastName": {"type": "string"}}}, "supported_sync_modes": ["full_refresh"]}}]}

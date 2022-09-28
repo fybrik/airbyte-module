@@ -62,3 +62,54 @@ spec:
         - source:
             protocol: file
             dataformat: csv
+    - capability: write
+      scope: workload
+      api:
+        connection:
+          name: fybrik-arrow-flight
+          fybrik-arrow-flight:
+            hostname: "{{ .Release.Name }}.{{ .Release.Namespace }}"
+            port: "80"
+            scheme: grpc
+      supportedInterfaces:
+        - sink:
+            protocol: postgres
+            dataformat: csv
+        - sink:
+            protocol: mysql
+            dataformat: csv
+        - sink:
+            protocol: google-sheets
+            dataformat: csv
+        - sink:
+            protocol: us-census
+            dataformat: csv
+        - sink:
+            protocol: file
+            dataformat: csv
+    - capability: write
+      scope: workload
+      api:
+        connection:
+          name: http
+          http:
+            hostname: "{{ .Release.Name }}.{{ .Release.Namespace }}"
+            port: "79"
+            scheme: grpc
+      supportedInterfaces:
+        - sink:
+            protocol: postgres
+            dataformat: csv
+        - sink:
+            protocol: mysql
+            dataformat: csv
+        - sink:
+            protocol: google-sheets
+            dataformat: csv
+        - sink:
+            protocol: us-census
+            dataformat: csv
+        - sink:
+            protocol: file
+            dataformat: csv
+

@@ -26,8 +26,8 @@ class GenericConnector:
             raise ValueError("'connector' field missing from configuration")
 
         self.workdir = workdir
-    # Potentially the fybrik-blueprint pod for the airbyte module can start before the docker daemon pod, causing
-    # docker.from_env() to fail
+        # Potentially the fybrik-blueprint pod for the airbyte module can start before the docker daemon pod, causing
+        # docker.from_env() to fail
         retryLoop = 0
         while retryLoop < 10:
             try:
@@ -267,42 +267,36 @@ class GenericConnector:
     '''
     Creates a template catalog for write connectors
     '''
-    def create_write_catalog(self, stream_name='testing'):
-        template = '{ \
-        "streams": [{ \
-                "sync_mode": "full_refresh", \
-                "destination_sync_mode": "overwrite", \
-                "stream": { \
-                        "name": "' + stream_name + '", \
-                        "json_schema": { \
-                                "$schema": "http://json-schema.org/draft-07/schema#", \
-                                "type": "object", \
-                                "properties": { \
-                                } \
-                        }, \
-                        "supported_sync_modes": [ \
-                                "full_refresh" \
-                        ] \
-                } \
-            }] \
-        }'
-
+    def create_write_catalog(self, schema):
         tmp_catalog = tempfile.NamedTemporaryFile(dir=self.workdir, mode='w+t')
-        tmp_catalog.writelines(template)
+        tmp_catalog.writelines(schema)
         tmp_catalog.flush()
         return tmp_catalog
 
-    def write_dataset(self, fptr, length):
-        self.logger.debug('write requested')
-        # The catalog to be provided to the write command is from a template -
+    '''
+    Creates a write command
+    '''
+    def create_write_command(self, schema):
+        # The catalog to be provided to the write command is from an input schema -
         # there is no discover on the write
-        tmp_catalog = self.create_write_catalog()
+        tmp_catalog = self.create_write_catalog(schema)
 
+        command = 'write --config ' + self.name_in_container(self.conf_file.name) + \
+                  ' --catalog ' + self.name_in_container(tmp_catalog.name)
+        return command, tmp_catalog
+
+    '''
+    Write dataset passed as file
+    '''
+    def write_dataset(self, schema, fptr, length):
+        self.logger.debug('write requested')
+        # The catalog to be provided to the write command is from an input schema -
+        # there is no discover on the write
+        tmp_catalog = self.create_write_catalog(schema)
         command = 'write --config ' + self.name_in_container(self.conf_file.name) + \
                   ' --catalog ' + self.name_in_container(tmp_catalog.name)
         s, container = self.open_socket_to_container(command)
 
-        # eg echo payload | docker run -v /Users/eliot/temp:/local -i airbyte/destination-local-json write --catalog /local/airbyte_catalog.txt --config /local/airbyte_write1.json
         bytesToWrite = length
         while bytesToWrite > 0:
             readSize = CHUNKSIZE if (bytesToWrite - CHUNKSIZE) >= 0 else bytesToWrite
@@ -313,3 +307,13 @@ class GenericConnector:
         tmp_catalog.close()
         # TODO: Need to figure out how to handle error return
         return True
+    '''
+    Write dataset passed as bytes
+    '''
+    def write_dataset_bytes(self, socket, bytes):
+        self.logger.debug('write bytes requested')
+        record = bytes + b'\n'
+        self.write_to_socket_to_container(socket, record)
+        # TODO: Need to figure out how to handle error return
+        return True
+

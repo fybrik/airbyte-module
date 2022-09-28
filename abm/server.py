@@ -9,6 +9,7 @@ from .connector import GenericConnector
 from .ticket import ABMTicket
 import http.server
 import json
+import json as simplejson
 import os
 import socketserver
 from http import HTTPStatus
@@ -50,9 +51,14 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(HTTPStatus.BAD_REQUEST)
                 self.end_headers()
 
-# Have the same routine for PUT and POST
+    # Have the same routine for PUT and POST
     def do_WRITE(self):
-        logger.info('write requested')
+        logger.info('http write requested')
+        try:
+            schema = json.dumps(json.loads(self.headers['schema']))
+        except BaseException as err:
+            logger.error(f"Unexpected {err=}, {type(err)=}")
+            raise
         with Config(self.config_path) as config:
             asset_name = self.path.lstrip('/')
             try:
@@ -63,9 +69,8 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(HTTPStatus.NOT_FOUND)
                 self.end_headers()
                 return
-            # Change to allow for streaming reads
             read_length = self.headers.get('Content-Length')
-            if connector.write_dataset(self.rfile, int(read_length)):
+            if connector.write_dataset(schema, self.rfile, int(read_length)):
                 self.send_response(HTTPStatus.OK)
             else:
                 self.send_response(HTTPStatus.BAD_REQUEST)
@@ -144,6 +149,44 @@ class ABMFlightServer(fl.FlightServerBase):
 
         # return dataset as arrow flight record batches
         return fl.GeneratorStream(schema, batches)
+
+    '''
+    Serve arrow flight do_put requests
+    '''
+    def do_put(self, context, descriptor, reader, writer):
+        try:
+            command = json.loads(descriptor.command)
+            asset_name = command['asset']
+            schema = command['schema']
+        except BaseException as err:
+            logger.error(f"Unexpected {err=}, {type(err)=}")
+            raise
+
+        logger.info('getting flight information',
+            extra={'command': descriptor.command,
+                   DataSetID: asset_name,
+                   ForUser: True})
+        with Config(self.config_path) as config:
+            asset_conf = config.for_asset(asset_name)
+            connector = GenericConnector(asset_conf, logger, self.workdir)
+            command, catalog = connector.create_write_command(schema)
+            socket, container = connector.open_socket_to_container(command)
+            idx = 0
+            record_reader = reader.to_reader()
+            while True:
+                try:
+                  batch = record_reader.read_next_batch()
+                  connector.write_dataset_bytes(socket, batch.to_pandas().to_json(orient='records', lines=True).encode())
+                  idx += 1
+                except StopIteration:
+                    logger.info('total number of chunks read:' + str(idx))
+                    break
+                except BaseException as err:
+                    logger.error(f"Unexpected {err=}, {type(err)=}")
+                    raise
+            connector.close_socket_to_container(socket, container)
+            catalog.close()
+            
 
     '''
     Serve arrow-flight get_flight_info requests.
