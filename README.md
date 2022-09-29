@@ -2,7 +2,7 @@
 
 # airbyte-module
 
-The airbyte-module (ABM) for [Fybrik](https://github.com/fybrik/fybrik) is a *READ* [`FybrikModule`](https://fybrik.io/dev/concepts/modules/) which makes use of [Airbyte](https://airbyte.com/) [connectors](https://docs.airbyte.com/integrations).
+The airbyte-module (ABM) for [Fybrik](https://github.com/fybrik/fybrik) is a [`FybrikModule`](https://fybrik.io/dev/concepts/modules/) which makes use of [Airbyte](https://airbyte.com/) [connectors](https://docs.airbyte.com/integrations).
 
 ABM is both an [Apache Arrow](https://arrow.apache.org/) [Flight](https://arrow.apache.org/docs/format/Flight.html) and an HTTP server.
 
