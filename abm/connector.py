@@ -7,13 +7,39 @@ import json
 import tempfile
 import pyarrow as pa
 from pyarrow import json as pa_json
+from fybrik_python_vault import get_jwt_from_file, get_raw_secret_from_vault
 
 MOUNTDIR = '/local'
 CHUNKSIZE = 1024
 CTRLD = '\x04'.encode()
 
+def get_s3_credentials_from_vault(vault_credentials, datasetID):
+    jwt_file_path = vault_credentials.get('jwt_file_path', '/var/run/secrets/kubernetes.io/serviceaccount/token')
+    jwt = get_jwt_from_file(jwt_file_path)
+    vault_address = vault_credentials.get('address', 'https://localhost:8200')
+    secret_path = vault_credentials.get('secretPath', '/v1/secret/data/cred')
+    vault_auth = vault_credentials.get('authPath', '/v1/auth/kubernetes/login')
+    role = vault_credentials.get('role', 'demo')
+    credentials = get_raw_secret_from_vault(jwt, secret_path, vault_address, vault_auth, role, datasetID)
+    if not credentials:
+        raise ValueError("Vault credentials are missing")
+    if 'access_key' in credentials and 'secret_key' in credentials:
+        if credentials['access_key'] and credentials['secret_key']:
+            return credentials['access_key'], credentials['secret_key']
+        else:
+            if not credentials['access_key']:
+                logger.error("'access_key' must be non-empty",
+                             extra={DataSetID: datasetID, ForUser: True})
+            if not credentials['secret_key']:
+                logger.error("'secret_key' must be non-empty",
+                             extra={DataSetID: datasetID, ForUser: True})
+    logger.error("Expected both 'access_key' and 'secret_key' fields in vault secret",
+                 extra={DataSetID: datasetID, ForUser: True})
+    raise ValueError("Vault credentials are missing")
+
 class GenericConnector:
-    def __init__(self, config, logger, workdir):
+    def __init__(self, config, logger, workdir, operation):
+        self.logger = logger
         if 'connection' not in config:
             raise ValueError("'connection' field missing from configuration")
 
@@ -21,9 +47,21 @@ class GenericConnector:
             raise ValueError("the name of the connection is missing")
         connection_name = config['connection']['name'] # e.g. postgres, google-sheets, us-census
 
+        vault = config['vault']
+        dataset_id = config['name']
         self.config = config['connection'][connection_name]
         if 'connector' not in self.config:
             raise ValueError("'connector' field missing from configuration")
+
+        if 'access_key_id' in self.config or 'secret_access_key' in self.config:
+            self.logger.debug('looking for access_key_id and secret_access_key')
+
+            access_key, secret_key = get_s3_credentials_from_vault(
+                vault[operation], dataset_id)
+            if access_key == "" or secret_key == "":
+                raise ValueError("Error getting access_key or secret_key from vault")
+            self.config['access_key_id'] = access_key
+            self.config['secret_access_key'] = secret_key
 
         self.workdir = workdir
         # Potentially the fybrik-blueprint pod for the airbyte module can start before the docker daemon pod, causing
@@ -45,8 +83,6 @@ class GenericConnector:
         # and sent to the connector. First, we must remove the 'connector' entry,
         # since the Airbyte connectors do not recognize this field
         del self.config['connector']
-
-        self.logger = logger
 
         # if the port field is a string, cast it to integer
         if 'port' in self.config and type(self.config['port']) == str:

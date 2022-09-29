@@ -37,6 +37,9 @@ spec:
         - source:
             protocol: file
             dataformat: csv
+        - source:
+            protocol: s3
+            dataformat: csv
     - capability: read
       scope: workload
       api:
@@ -61,6 +64,9 @@ spec:
             dataformat: csv
         - source:
             protocol: file
+            dataformat: csv
+        - source:
+            protocol: s3
             dataformat: csv
     - capability: write
       scope: workload
@@ -87,6 +93,9 @@ spec:
         - sink:
             protocol: file
             dataformat: csv
+        - sink:
+            protocol: s3
+            dataformat: csv
     - capability: write
       scope: workload
       api:
@@ -112,4 +121,6 @@ spec:
         - sink:
             protocol: file
             dataformat: csv
-
+        - sink:
+            protocol: s3
+            dataformat: csv
