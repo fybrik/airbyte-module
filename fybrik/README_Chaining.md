@@ -38,7 +38,7 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
    kubectl config set-context --current --namespace=fybrik-airbyte-sample
    ```
 
-1. Create an asset (the `userdata` asset) in fybrik's mini data catalog, the policy to access it (we use a policy that requires redactions to PII columns), and a FybrikApplication indicating the workload, context, and data requested:
+1. Create an asset (the `userdata` asset) in fybrik's mini data catalog, the policy to access it (we use a policy that requires redactions to PII.Sensitive columns), and a FybrikApplication indicating the workload, context, and data requested:
    ```bash
    kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/asset.yaml
    kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_MODULE_DIR/fybrik/sample-policy-restrictive.rego
