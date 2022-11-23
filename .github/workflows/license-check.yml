@@ -17,5 +17,5 @@ jobs:
         run: |
           go get -u github.com/google/addlicense
           export PATH=$PATH:$(go env GOPATH)/bin
-          addlicense -f hack/LICENSE.go.txt -check $(find $PWD -type f -name '*.go')
+          addlicense -f hack/LICENSE.go.txt -check $(find $PWD -type f -name '*.py')
 
