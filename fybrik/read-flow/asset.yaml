@@ -20,17 +20,17 @@ spec:
     name: test data
     geography: theshire 
     tags:
-      finance: true
+      Purpose.finance: true
     columns:
       - name: first_name
         tags:
-          PII: true
+          PII.Sensitive: true
       - name: last_name
         tags:
-          PII: true
+          PII.Sensitive: true
       - name: email
         tags:
-          PII: true
+          PII.Sensitive: true
       - name: birthdate
         tags:
-          PII: true
+          PII.Sensitive: true
