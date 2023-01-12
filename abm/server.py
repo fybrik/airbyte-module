@@ -11,6 +11,7 @@ import http.server
 import json
 import json as simplejson
 import os
+import time
 import socketserver
 from http import HTTPStatus
 import pandas as pd
@@ -178,13 +179,14 @@ class ABMFlightServer(fl.FlightServerBase):
             socket, container = connector.open_socket_to_container(command)
             idx = 0
             record_reader = reader.to_reader()
+            current_time = time.time() * 1000
             while True:
                 try:
                   # convert from Arrow format to Airbyte format
                   batch = record_reader.read_next_batch()
                   df = batch.to_pandas()
                   for _, row in df.iterrows():
-                    record_message=AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream=stream_name, data=row, emitted_at=111)).json()
+                    record_message=AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream=stream_name, data=row, emitted_at=current_time)).json()
                     connector.write_dataset_bytes(socket,record_message.encode('utf-8'))
                   idx += 1
                 except StopIteration:
