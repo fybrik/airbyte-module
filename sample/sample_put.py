@@ -47,7 +47,7 @@ class HttpBasicClientAuthHandler(fl.ClientAuthHandler):
 request = {
     "asset": "write_test",
     "stream_name": "testing",
-    "schema":  '{"streams": [{"sync_mode": "full_refresh",  "destination_sync_mode": "overwrite", "stream": {"supported_sync_modes": ["full_refresh"], "name": "testing", "json_schema": {"type": "object",  "properties": {"DOB": { "type": "string" },"Name": { "type": "string" }}}}}]}'
+    "json_schema": '{"type": "object",  "properties": {"Name": { "type": "string" }}}'
   }
 
 def main(port):
