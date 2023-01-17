@@ -30,6 +30,10 @@ Arrow Flight server (on port 8081)
     ```
 
 ### Write example
+1. Install python dependencies
+    ```bash
+    pipenv install
+    ```
 1. Run the server with
     ```bash
     pipenv run server --config sample/write_config.yaml  --workdir /tmp
