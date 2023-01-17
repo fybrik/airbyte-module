@@ -12,11 +12,13 @@ import json
 import json as simplejson
 import os
 import time
+import string
+import random
 import socketserver
 from http import HTTPStatus
 import pandas as pd
 import pyarrow.flight as fl
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage,ConfiguredAirbyteStream,DestinationSyncMode,SyncMode,AirbyteStream,ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, AirbyteStream, ConfiguredAirbyteCatalog
 from airbyte_cdk.models import Type as MessageType
 
 
@@ -162,9 +164,11 @@ class ABMFlightServer(fl.FlightServerBase):
         try:
             command = json.loads(descriptor.command)
             asset_name = command['asset']
-            stream_name = command['stream_name']
             json_schema_str = command['json_schema']
             json_schema=json.loads(json_schema_str)
+            stream_name_len = 7
+            # random generation of the stream name
+            stream_name = ''.join(random.choices(string.ascii_lowercase, k=stream_name_len))
         except BaseException as err:
             logger.error(f"Unexpected {err=}, {type(err)=}")
             raise
@@ -176,9 +180,9 @@ class ABMFlightServer(fl.FlightServerBase):
         with Config(self.config_path) as config:
             asset_conf = config.for_asset(asset_name)
             connector = GenericConnector(asset_conf, logger, self.workdir)
+            stream = AirbyteStream(name=stream_name,supported_sync_modes=[SyncMode.full_refresh],json_schema=json_schema)
             # TODO: Params to the Airbyte objects, such as destination_sync_mode, can be configurable using the arrow-flight request
-            streams=[ConfiguredAirbyteStream(destination_sync_mode=DestinationSyncMode.append,sync_mode=SyncMode.full_refresh,
-               stream=AirbyteStream(name=stream_name,supported_sync_modes=[SyncMode.full_refresh],json_schema=json_schema))]
+            streams = [ConfiguredAirbyteStream(destination_sync_mode=DestinationSyncMode.append, sync_mode=SyncMode.full_refresh, stream=stream)]
             command, catalog = connector.create_write_command(ConfiguredAirbyteCatalog(streams=streams).json())
             socket, container = connector.open_socket_to_container(command)
             idx = 0
