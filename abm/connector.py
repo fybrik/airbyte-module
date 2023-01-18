@@ -14,7 +14,7 @@ CHUNKSIZE = 1024
 CTRLD = '\x04'.encode()
 
 class GenericConnector:
-    def __init__(self, config, logger, workdir):
+    def __init__(self, config, logger, workdir, asset_name=""):
         if 'connection' not in config:
             raise ValueError("'connection' field missing from configuration")
 
@@ -29,7 +29,7 @@ class GenericConnector:
         if 'vault_credentials' in self.config:
             vault_credentials = self.config['vault_credentials']
             del self.config['vault_credentials']
-            secrets = get_secrets_from_vault(vault_credentials=vault_credentials, datasetID="")
+            secrets = get_secrets_from_vault(vault_credentials=vault_credentials, datasetID=asset_name)
             if secrets:
                 # merge config with secrets returned by vault
                 self.config = dict(self.config, **secrets)

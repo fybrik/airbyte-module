@@ -33,7 +33,7 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
             asset_name = self.path.lstrip('/')
             try:
                 asset_conf = config.for_asset(asset_name)
-                connector = GenericConnector(asset_conf, logger, self.workdir)
+                connector = GenericConnector(asset_conf, logger, self.workdir, asset_name)
             except ValueError:
                 logger.error('asset not found or malformed configuration')
                 self.send_response(HTTPStatus.NOT_FOUND)
@@ -63,7 +63,7 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
             asset_name = self.path.lstrip('/')
             try:
                 asset_conf = config.for_asset(asset_name)
-                connector = GenericConnector(asset_conf, logger, self.workdir)
+                connector = GenericConnector(asset_conf, logger, self.workdir, asset_name)
             except ValueError:
                 logger.error('asset ' + asset_name + ' not found or malformed configuration')
                 self.send_response(HTTPStatus.NOT_FOUND)
@@ -140,7 +140,7 @@ class ABMFlightServer(fl.FlightServerBase):
         with Config(self.config_path) as config:
             asset_conf = config.for_asset(ticket_info.asset_name)
 
-        connector = GenericConnector(asset_conf, logger, self.workdir)
+        connector = GenericConnector(asset_conf, logger, self.workdir, ticket_info.asset_name)
         # determine schema using the Airbyte 'discover' operation
         schema = connector.get_schema()
 
@@ -168,7 +168,7 @@ class ABMFlightServer(fl.FlightServerBase):
                    ForUser: True})
         with Config(self.config_path) as config:
             asset_conf = config.for_asset(asset_name)
-            connector = GenericConnector(asset_conf, logger, self.workdir)
+            connector = GenericConnector(asset_conf, logger, self.workdir, asset_name)
             command, catalog = connector.create_write_command(schema)
             socket, container = connector.open_socket_to_container(command)
             idx = 0
@@ -203,7 +203,7 @@ class ABMFlightServer(fl.FlightServerBase):
         with Config(self.config_path) as config:
             asset_conf = config.for_asset(asset_name)
             # given the asset configuration, let us determine the schema
-            connector = GenericConnector(asset_conf, logger, self.workdir)
+            connector = GenericConnector(asset_conf, logger, self.workdir, asset_name)
             schema = connector.get_schema()
 
         locations = self._get_locations()
