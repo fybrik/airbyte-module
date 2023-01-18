@@ -7,6 +7,7 @@ import json
 import tempfile
 import pyarrow as pa
 from pyarrow import json as pa_json
+from .vault import get_secrets_from_vault
 
 MOUNTDIR = '/local'
 CHUNKSIZE = 1024
@@ -24,6 +25,16 @@ class GenericConnector:
         self.config = config['connection'][connection_name]
         if 'connector' not in self.config:
             raise ValueError("'connector' field missing from configuration")
+
+        if 'vault_credentials' in self.config:
+            vault_credentials = self.config['vault_credentials']
+            del self.config['vault_credentials']
+            secrets = get_secrets_from_vault(vault_credentials=vault_credentials, datasetID="")
+            if secrets:
+                # merge config with secrets returned by vault
+                self.config = dict(self.config, **secrets)
+            else:
+                logger.info("no secrets returned by vault")
 
         self.workdir = workdir
         # Potentially the fybrik-blueprint pod for the airbyte module can start before the docker daemon pod, causing
