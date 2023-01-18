@@ -140,7 +140,7 @@ class GenericConnector:
     def open_socket_to_container(self, command):
         container = self.client.containers.run(self.connector, detach=True,
                              tty=True, stdin_open=True,
-                             volumes=[self.workdir + ':' + MOUNTDIR],
+                             volumes=[self.workdir + ':' + MOUNTDIR], network_mode='host',
                              command=command, remove=True)
         # attach to the container stdin socket
         s = container.attach_socket(params={'stdin': 1, 'stream': 1, 'stdout': 1, 'stderr': 1})
