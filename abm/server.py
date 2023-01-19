@@ -40,7 +40,7 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
             asset_name = self.path.lstrip('/')
             try:
                 asset_conf = config.for_asset(asset_name)
-                connector = GenericConnector(asset_conf, logger, self.workdir)
+                connector = GenericConnector(asset_conf, logger, self.workdir, asset_name)
             except ValueError:
                 logger.error('asset not found or malformed configuration')
                 self.send_response(HTTPStatus.NOT_FOUND)
@@ -70,7 +70,7 @@ class ABMHttpHandler(http.server.SimpleHTTPRequestHandler):
             asset_name = self.path.lstrip('/')
             try:
                 asset_conf = config.for_asset(asset_name)
-                connector = GenericConnector(asset_conf, logger, self.workdir)
+                connector = GenericConnector(asset_conf, logger, self.workdir, asset_name)
             except ValueError:
                 logger.error('asset ' + asset_name + ' not found or malformed configuration')
                 self.send_response(HTTPStatus.NOT_FOUND)
@@ -147,7 +147,7 @@ class ABMFlightServer(fl.FlightServerBase):
         with Config(self.config_path) as config:
             asset_conf = config.for_asset(ticket_info.asset_name)
 
-        connector = GenericConnector(asset_conf, logger, self.workdir)
+        connector = GenericConnector(asset_conf, logger, self.workdir, ticket_info.asset_name)
         # determine schema using the Airbyte 'discover' operation
         schema = connector.get_schema()
 
@@ -179,7 +179,7 @@ class ABMFlightServer(fl.FlightServerBase):
                    ForUser: True})
         with Config(self.config_path) as config:
             asset_conf = config.for_asset(asset_name)
-            connector = GenericConnector(asset_conf, logger, self.workdir)
+            connector = GenericConnector(asset_conf, logger, self.workdir, asset_name)
             stream = AirbyteStream(name=stream_name,supported_sync_modes=[SyncMode.full_refresh],json_schema=json_schema)
             # TODO: Params to the Airbyte objects, such as destination_sync_mode, can be configurable using the arrow-flight request
             streams = [ConfiguredAirbyteStream(destination_sync_mode=DestinationSyncMode.append, sync_mode=SyncMode.full_refresh, stream=stream)]
@@ -222,7 +222,7 @@ class ABMFlightServer(fl.FlightServerBase):
         with Config(self.config_path) as config:
             asset_conf = config.for_asset(asset_name)
             # given the asset configuration, let us determine the schema
-            connector = GenericConnector(asset_conf, logger, self.workdir)
+            connector = GenericConnector(asset_conf, logger, self.workdir, asset_name)
             schema = connector.get_schema()
 
         locations = self._get_locations()
