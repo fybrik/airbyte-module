@@ -1,0 +1,12 @@
+data:
+  - name: "userdata"
+    connection:
+      name: write_mysql
+      write_mysql:
+        connector: airbyte/destination-mysql
+        host: host.docker.internal
+        port: 3306
+        database: test 
+        username: root
+        password: password
+        ssl: false
