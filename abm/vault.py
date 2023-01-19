@@ -4,7 +4,6 @@
 #
 
 from fybrik_python_vault import get_jwt_from_file, get_raw_secret_from_vault
-from fybrik_python_logging import logger, DataSetID, ForUser
 
 
 def get_secrets_from_vault(vault_credentials, datasetID, tls_min_version=None, verify=True, cert=None):
