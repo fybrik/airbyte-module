@@ -10,18 +10,18 @@ data:
          {{- if .vault }}
            {{- range $k, $v := .vault }}
              {{- if eq $k $operation }}
-                {{ print "vault_credentials:" | nindent 4 }}
+                {{- print "vault_credentials:" | nindent 4 }}
                 {{- if $v.address }}
-                   {{ print "address: " $v.address | nindent 6 }}
+                   {{- print "address: " $v.address | nindent 6 }}
                 {{- end }}
                 {{- if $v.authPath }}
-                   {{ print "authPath: " $v.authPath | nindent 6 }}
+                   {{- print "authPath: " $v.authPath | nindent 6 }}
                 {{- end }}
                 {{- if $v.role }}
-                   {{ print "role: " $v.role  | nindent 6 }}
+                   {{- print "role: " $v.role  | nindent 6 }}
                 {{- end }}
                 {{- if $v.secretPath }}
-                   {{ print "secretPath: " $v.secretPath | nindent 6 }}
+                   {{- print "secretPath: " $v.secretPath | nindent 6 }}
                 {{- end }}
              {{- end }}
            {{- end }}
@@ -33,7 +33,7 @@ data:
             {{- if hasKey $additionalPropertiesForConnector $operation }}
               {{- $additionalPropertiesForConnectorOp := get $additionalPropertiesForConnector $operation }}
               {{- $connectionDetails := mergeOverwrite $connectionDetails $additionalPropertiesForConnectorOp }}
-                 {{ print "connection:" | nindent 4 }}
+                 {{- print "connection:" | nindent 4 }}
                  {{- .connection | toYaml | nindent 6 }}
             {{- else }}
               {{- toYaml . | nindent 4 }}
