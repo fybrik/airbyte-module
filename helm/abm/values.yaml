@@ -35,3 +35,17 @@ tolerations: []
 
 affinity: {}
 
+# Additional connection properties that should be passed to
+# the Airbyte connector. These additional properties are merged with the
+# connection properties defined in Fybrik taxonomy to construct
+# the properties passed to the connector.
+connectors:
+  mysql:
+    # Specify properties for source.
+    read:
+      replication_method:
+        method: "STANDARD"
+      connector: airbyte/source-mysql
+    # Specify properties for destination.
+    write:
+      connector: airbyte/destination-mysql

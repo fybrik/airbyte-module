@@ -6,11 +6,17 @@ uuid: "12345678"
 assets:
 - args:
   - connection:
-        name: mysql
-        mysql:
-          database: test
-          host: host.docker.internal
-          port: 3306
+      name: mysql
+      mysql:
+        database: test
+        host: host.docker.internal
+        port: 3306
+    vault:
+      write:
+        address: http://vault.fybrik-system:8200
+        authPath: /v1/auth/kubernetes/login
+        role: module
+        secretPath: /v1/kubernetes-secrets/bucket-creds?namespace=fybrik-system
   assetID: new-data-parquet
   capability: write
 

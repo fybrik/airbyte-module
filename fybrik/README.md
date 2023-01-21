@@ -57,7 +57,7 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
    ```bash
    cd $AIRBYTE_MODULE_DIR/helm/client
    ./deploy_airbyte_module_client_pod.sh
-   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata
+   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-read-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata
    ```
 
 # Writing Dataset with Fybrik Application
@@ -84,7 +84,7 @@ Repeat steps 1-5 above.
    export AIRBYTE_POD_NAME=$(kubectl get pods -n fybrik-blueprints | grep airbyte |awk '{print $1}')
    cd $AIRBYTE_MODULE_DIR/helm/client
    ./deploy_airbyte_module_client_pod.sh
-   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata --operation put
+   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-write-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata --operation put
    kubectl exec $AIRBYTE_POD_NAME -n fybrik-blueprints -- cat /local/airbyte_out/_airbyte_raw_testing.jsonl
    ```
 

@@ -1,5 +1,5 @@
 data:
-  - name: "read_mysql"
+  - name: "userdata"
     connection:
       name: read_mysql
       read_mysql:

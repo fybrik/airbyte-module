@@ -26,9 +26,8 @@ class GenericConnector:
         if 'connector' not in self.config:
             raise ValueError("'connector' field missing from configuration")
 
-        if 'vault_credentials' in self.config:
-            vault_credentials = self.config['vault_credentials']
-            del self.config['vault_credentials']
+        if 'vault_credentials' in config:
+            vault_credentials = config['vault_credentials']
             secrets = get_secrets_from_vault(vault_credentials=vault_credentials, datasetID=asset_name)
             if secrets:
                 # merge config with secrets returned by vault
