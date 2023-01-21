@@ -1,3 +1,4 @@
+# sample config for writing dataset to mysql table.
 data:
   - name: "userdata"
     connection:
