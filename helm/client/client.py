@@ -4,6 +4,7 @@
 #
 import pyarrow.flight as fl
 import pyarrow as pa
+from faker import Faker
 import json
 
 def read_from_endpoint(endpoint):
@@ -15,6 +16,26 @@ def read_dataset():
     threads = []
     for endpoint in info.endpoints:
         read_from_endpoint(endpoint)
+
+def fake_dataset(num_entries):
+        Faker.seed(1234)
+        f = Faker()
+        arrays = []
+        column_names = []
+
+        arr = []
+        for i in range(num_entries):
+           arr.append(f.date_of_birth())
+        arrays.append(arr)
+        column_names.append("DOB")
+
+        arr = []
+        for i in range(num_entries):
+           arr.append(f.name())
+        arrays.append(arr)
+        column_names.append("Name")
+
+        return arrays, column_names
 
 def main(host, port, asset, operation):
     global client
@@ -31,39 +52,15 @@ def main(host, port, asset, operation):
     elif operation == "put":
       request = {
         "asset": asset,
-        "schema": '{ \
-          "streams": [{ \
-                "sync_mode": "full_refresh", \
-                "destination_sync_mode": "overwrite", \
-                "stream": { \
-                        "name": "testing", \
-                        "json_schema": { \
-                            "$schema": "http://json-schema.org/draft-07/schema#", \
-                            "type": "object", \
-                            "properties": { \
-                                "DOB": { \
-                                    "type": "string" \
-                                }, \
-                                "FirstName": { \
-                                    "type": "string" \
-                                }, \
-                                "LastNAME": { \
-                                    "type": "string" \
-                                } \
-                            } \
-                        }, \
-                        "supported_sync_modes": [ \
-                                "full_refresh" \
-                        ] \
-                } \
-            }] \
-        }'
+        # The request must contain the json_schema of the written data.
+        "json_schema": '{"$schema": "http://json-schema.org/draft-07/schema#", "type": "object",  "properties": {"Name": { "type": "string" }, "DOB": { "type": "string" } }}'
       }
-      arrays = [["RECORD", "RECORD", "RECORD"], [{"stream": "testing","data": {"DOB": "01/02/1992", "FirstName": "John", "LastNAME":"Jones"}, "emitted_at": 0}, {"stream": "testing","data": {"DOB": "01/02/1994", "FirstName": "Ludwig", "LastNAME":"Beethoven"}, "emitted_at": 0}, {"stream": "testing","data": {"DOB": "01/02/1995", "FirstName": "Frank", "LastNAME":"Sinatra"}, "emitted_at": 0}]]
-      names = ["type", "record"]
+       
+      arrays, names = fake_dataset(10)
+
       data = pa.Table.from_arrays(arrays, names=names)
       writer, _ = client.do_put(fl.FlightDescriptor.for_command(json.dumps(request)),
-                               data.schema)
+                                data.schema)
       writer.write_table(data, 1024)
       writer.close()
     else:
