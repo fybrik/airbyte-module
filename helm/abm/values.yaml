@@ -50,3 +50,11 @@ connectors:
     # Specify properties for destination.
     write:
       connector: airbyte/destination-mysql
+  google-sheets:
+    # Specify properties for source.
+    read:
+      connector: airbyte/source-google-sheets
+    # Specify properties for destination.
+    write:
+      connector: airbyte/destination-google-sheets
+
