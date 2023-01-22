@@ -7,6 +7,7 @@ data:
     {{- $operation := $asset.capability }}
     {{- if and (.args) (eq (len .args) 1) -}}
        {{- with (index .args 0) }}
+         {{- /* output vault properties */ -}}
          {{- if .vault }}
            {{- range $k, $v := .vault }}
              {{- if eq $k $operation }}
@@ -26,6 +27,7 @@ data:
              {{- end }}
            {{- end }}
          {{- end }}
+         {{- /* output the connection details. If additional properties defined in values.yaml then merge them. */ -}}
          {{- $connectionName := .connection.name }}
          {{- $connectionDetails := get .connection .connection.name }}
          {{- if hasKey $connectorsMap $connectionName }}
