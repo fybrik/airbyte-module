@@ -62,13 +62,13 @@ connectors:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-google-sheets/destination_google_sheets/spec.json
       connector: airbyte/destination-google-sheets
   postgres:
-      # Specify properties for source.
-      read:
-         # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/main/resources/spec.json
-         connector: airbyte/source-postgres
-      write:
-        # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/resources/spec.json
-        connector: airbyte/destination-postgres
-        # The default schema tables are written to if the source does not specify a namespace. The usual value for this field is "public".
-        schema: public
+    # Specify properties for source.
+    read:
+      # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/main/resources/spec.json
+      connector: airbyte/source-postgres
+    write:
+      # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/resources/spec.json
+      connector: airbyte/destination-postgres
+      # The default schema tables are written to if the source does not specify a namespace. The usual value for this field is "public".
+      schema: public
 
