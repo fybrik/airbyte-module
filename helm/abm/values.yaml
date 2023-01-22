@@ -5,9 +5,9 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/revit13/airbyte-module
-  tag: 0.0.99
-  pullPolicy: Always 
+  repository: ghcr.io/fybrik/airbyte-module
+  tag: main
+  pullPolicy: null
   pullSecret: null
 
 nameOverride: ""
