@@ -27,6 +27,7 @@ data:
              {{- end }}
            {{- end }}
          {{- end }}
+    {{- print "connection:" | nindent 4 }}
          {{- /* output the connection details. If additional properties defined in values.yaml then merge them. */ -}}
          {{- $connectionName := .connection.name }}
          {{- $connectionDetails := get .connection .connection.name }}
@@ -37,7 +38,7 @@ data:
               {{- $connectionDetails := merge $connectionDetails $additionalPropertiesForConnectorOp }}
             {{- end }}
          {{- end }}
-         {{- toYaml .connection | nindent 4 }}
+         {{- toYaml .connection | nindent 6 }}
        {{- end }}
     {{- end }}
 {{- end }}
