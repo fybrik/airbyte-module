@@ -82,9 +82,6 @@ spec:
             protocol: google-sheets
             dataformat: csv
         - sink:
-            protocol: us-census
-            dataformat: csv
-        - sink:
             protocol: file
             dataformat: csv
     - capability: write

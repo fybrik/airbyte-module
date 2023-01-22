@@ -71,4 +71,9 @@ connectors:
       connector: airbyte/destination-postgres
       # The default schema tables are written to if the source does not specify a namespace. The usual value for this field is "public".
       schema: public
+  us-census:
+    # Specify properties for source.
+    read:
+      # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-us-census/source_us_census/spec.json
+      connector: airbyte/source-us-census
 
