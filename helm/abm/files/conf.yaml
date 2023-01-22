@@ -35,7 +35,7 @@ data:
               {{- $connectionDetails := merge $connectionDetails $additionalPropertiesForConnectorOp }}
             {{- end }}
          {{- end }}
-         {{- toYaml . | nindent 4 }}
+         {{- toYaml .connection | nindent 4 }}
        {{- end }}
     {{- end }}
 {{- end }}
