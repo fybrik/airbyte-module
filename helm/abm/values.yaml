@@ -5,9 +5,9 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/fybrik/airbyte-module
-  tag: main
-  pullPolicy: null
+  repository: ghcr.io/revit13/airbyte-module
+  tag: 0.0.99
+  pullPolicy: Always 
   pullSecret: null
 
 nameOverride: ""
@@ -36,9 +36,10 @@ tolerations: []
 affinity: {}
 
 # Additional connection properties that should be passed to
-# the Airbyte connector. These additional properties are merged with the
-# connection properties defined in Fybrik taxonomy to construct
-# the properties passed to the connector.
+# the Airbyte connector. If such exists, they are merged with the
+# connection properties defined in Fybrik taxonomy to configure
+# the Airbyte connector. Otherwise only the connection properties 
+# defined in Fybrik taxonomy are used to configure the Airbyte connector.
 connectors:
   mysql:
     # Specify properties for source.

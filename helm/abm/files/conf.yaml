@@ -32,15 +32,10 @@ data:
             {{- $additionalPropertiesForConnector := get $connectorsMap $connectionName }}
             {{- if hasKey $additionalPropertiesForConnector $operation }}
               {{- $additionalPropertiesForConnectorOp := get $additionalPropertiesForConnector $operation }}
-              {{- $connectionDetails := mergeOverwrite $connectionDetails $additionalPropertiesForConnectorOp }}
-                 {{- print "connection:" | nindent 4 }}
-                 {{- .connection | toYaml | nindent 6 }}
-            {{- else }}
-              {{- toYaml . | nindent 4 }}
+              {{- $connectionDetails := merge $connectionDetails $additionalPropertiesForConnectorOp }}
             {{- end }}
-         {{- else }}
-            {{- toYaml . | nindent 4 }}
          {{- end }}
+         {{- toYaml . | nindent 4 }}
        {{- end }}
     {{- end }}
 {{- end }}
