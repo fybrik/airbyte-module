@@ -35,8 +35,11 @@ spec:
             protocol: us-census
             dataformat: csv
         - source:
-            protocol: file
+            protocol: https
             dataformat: csv
+        - source:
+            protocol: https
+            dataformat: parquet
     - capability: read
       scope: workload
       api:
@@ -60,8 +63,11 @@ spec:
             protocol: us-census
             dataformat: csv
         - source:
-            protocol: file
+            protocol: https
             dataformat: csv
+        - source:
+            protocol: https
+            dataformat: parquet
     - capability: write
       scope: workload
       api:
@@ -82,8 +88,8 @@ spec:
             protocol: google-sheets
             dataformat: csv
         - sink:
-            protocol: file
-            dataformat: csv
+            protocol: localfile
+            dataformat: json
     - capability: write
       scope: workload
       api:
@@ -107,6 +113,6 @@ spec:
             protocol: us-census
             dataformat: csv
         - sink:
-            protocol: file
-            dataformat: csv
+            protocol: localfile
+            dataformat: json
 

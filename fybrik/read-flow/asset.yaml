@@ -6,16 +6,11 @@ spec:
   secretRef: 
     name: fake-secret
   details:
-    dataFormat: csv
+    dataFormat: parquet
     connection:
-      name: file
-      file:
-        connector: "airbyte/source-file"
-        dataset_name: userdata
-        format: parquet
+      name: https
+      https:
         url: "https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet"
-        provider:
-          storage: HTTPS
   metadata:
     name: test data
     geography: theshire 

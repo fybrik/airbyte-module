@@ -3,10 +3,11 @@ app-uuid: {{ .Values.uuid | default "app-uuid-missing" }}
 data:
 {{- $connectorsMap := .Values.connectors }}
 {{- range $asset := .Values.assets }}
-  - name: {{ $asset.assetID | quote }}
+  - name: {{ $asset.assetID | quote -}}
     {{- $operation := $asset.capability }}
     {{- if and (.args) (eq (len .args) 1) -}}
        {{- with (index .args 0) }}
+       {{- $format := .format }}
          {{- /* output vault properties */ -}}
          {{- if .vault }}
            {{- range $k, $v := .vault }}
@@ -35,7 +36,18 @@ data:
             {{- $additionalPropertiesForConnector := get $connectorsMap $connectionName }}
             {{- if hasKey $additionalPropertiesForConnector $operation }}
               {{- $additionalPropertiesForConnectorOp := get $additionalPropertiesForConnector $operation }}
-              {{- $connectionDetails := merge $connectionDetails $additionalPropertiesForConnectorOp }}
+              {{- /* add keys according to the processing of the metadata properties. */ -}}
+              {{- if include "airbyte-module.is-format-equal" (dict "connectionFormat" $format "additionalProperties" $additionalPropertiesForConnectorOp) }}
+                {{- if hasKey $additionalPropertiesForConnectorOp "emit_format" -}}
+                  {{- $additionalPropertiesForConnectorOp := set $additionalPropertiesForConnectorOp "format" $format }}
+                {{- end }}
+                {{- if hasKey $additionalPropertiesForConnectorOp "emit_asset_key" -}}
+                    {{- $assetKey := get $additionalPropertiesForConnectorOp "emit_asset_key" -}}
+                   {{- $additionalPropertiesForConnectorOp := set $additionalPropertiesForConnectorOp $assetKey $asset.assetID }}
+                {{- end }}
+                {{- include "airbyte-module.remove-metadata-keys" $additionalPropertiesForConnectorOp }}
+                {{- $connectionDetails := merge $connectionDetails $additionalPropertiesForConnectorOp }}
+              {{- end }}
             {{- end }}
          {{- end }}
          {{- toYaml .connection | nindent 6 }}

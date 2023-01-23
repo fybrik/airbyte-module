@@ -6,11 +6,10 @@ spec:
   secretRef: 
     name: fake-secret
   details:
-    dataFormat: csv
+    dataFormat: json
     connection:
-      name: file
-      file:
-        connector: airbyte/destination-local-json
+      name: localfile
+      localfile:
         destination_path: airbyte_out
   metadata:
     name: test data

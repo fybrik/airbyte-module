@@ -15,12 +15,11 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
 
 1. Install Fybrik Prerequisites. Follow the instruction in the Fybrik [Quick Start Guide](https://fybrik.io/dev/get-started/quickstart/). Stop before the "Install control plane" section.
 
-1. Before installing the control plane, we need to customize the [Fybrik taxonomy](https://fybrik.io/dev/tasks/custom-taxonomy/), to define new connection and interface types. This customization requires [go](https://go.dev/dl/) version 1.17 or above. Please note that in this tutorial a built-in catalog called `katalog` is used as opposed to the default Openmetadata catalog used in Fybrik. Run:
+1. Install Fybrik with built-in catalog called `katalog`. This is used as opposed to the default Openmetadata catalog used in Fybrik.
     ```bash
     cd $FYBRIK_DIR
-    go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json pkg/storage/layers/connection.yaml
     helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-    helm install fybrik charts/fybrik --set coordinator.catalog=katalog --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
+    helm install fybrik charts/fybrik --set coordinator.catalog=katalog --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait
     ```
 
 1. Install the Airbyte module:

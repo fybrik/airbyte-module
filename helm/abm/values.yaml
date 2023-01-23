@@ -35,11 +35,16 @@ tolerations: []
 
 affinity: {}
 
-# Additional connection properties that should be passed to
-# the Airbyte connector. If such exists, they are merged with the
-# connection properties defined in Fybrik taxonomy to configure
-# the Airbyte connector. Otherwise only the connection properties 
-# defined in Fybrik taxonomy are used to configure the Airbyte connector.
+# Additional connection properties that are passed to the Airbyte connector.
+# If such exists, they are merged with the connection properties defined in Fybrik taxonomy to configure
+# the Airbyte connector. Otherwise only the connection properties defined in Fybrik taxonomy are used.
+# To process the properties according to connector type special metadata properties are defined:
+# - expected_format: contains the format of the source/destination.
+# - emit_format: if defined then the connection format should be emitted.
+# - emit_asset_key: if defined then its value should be the key of the asset name. for example if it is equal to
+#   `emit_asset_key: dataset_name` then the pair `dataset_name: asset-name` is added.
+#
+# The metadata properties are optional and are not passed to the connector.
 connectors:
   mysql:
     # Specify properties for source.
@@ -76,4 +81,18 @@ connectors:
     read:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-us-census/source_us_census/spec.json
       connector: airbyte/source-us-census
-
+  localfile:
+    write:
+      expected_format: json
+      # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-local-json/src/main/resources/spec.json
+      connector: airbyte/destination-local-json
+  https:
+    # Specify properties for source.
+    read:
+      # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-file/source_file/spec.json
+      connector: airbyte/source-file
+      emit_format: true
+      provider:
+        storage: HTTPS
+      # dataset_name is the Name of the final table to replicate this file into.
+      emit_asset_key: dataset_name
