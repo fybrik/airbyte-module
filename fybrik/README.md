@@ -43,8 +43,8 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
 
 1. Create an asset (the `userdata` asset) and an application that requires this asset:
    ```bash
-   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/read-flow/asset.yaml
-   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/read-flow/application.yaml
+   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/read-flow/asset.yaml -n fybrik-airbyte-sample
+   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/read-flow/application.yaml -n fybrik-airbyte-sample
    ```
 
 1. After the application is created, the Fybrik manager attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the `userdata` dataset, and deploys it in the `fybrik-blueprints` namespace. To verify that the Airbyte module was indeed deployed, run:
@@ -69,8 +69,8 @@ Repeat steps 1-5 above.
 
 6. Create an asset (the `userdata` asset), the policy to access it (we use a policy that does not restrict access nor mandate any transformations), and an application that requires this asset:
    ```bash
-   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/asset.yaml
-   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/application.yaml
+   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/asset.yaml -n fybrik-airbyte-sample
+   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/application.yaml -n fybrik-airbyte-sample
    ```
 
 1. After the application is created, the Fybrik manager attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the `userdata` dataset, and deploys it in the `fybrik-blueprints` namespace. To verify that the Airbyte module was indeed deployed, run:

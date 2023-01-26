@@ -34,6 +34,7 @@ Create chart name and version as used by the chart label.
 {{/* remove metadata keys */}}
 {{- define "airbyte-module.remove-metadata-keys" -}}
 {{- $_ := unset . "expected_format" }}
+{{- $_ := unset . "discard_format" }}
 {{- end -}}
 
 /*

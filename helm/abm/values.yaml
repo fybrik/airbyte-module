@@ -40,6 +40,7 @@ affinity: {}
 # the Airbyte connector. Otherwise only the connection properties defined in Fybrik taxonomy are used.
 # To process the properties according to connector type special metadata properties are defined:
 # - expected_format: contains the format of the source/destination.
+# - discard_format: if exists then the connection format should be discarded. Otherwise it is part of the connection map.
 #
 # The metadata properties are optional and are not passed to the connector.
 connectors:
@@ -83,9 +84,11 @@ connectors:
     - expected_format: json
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-local-json/src/main/resources/spec.json
       connector: airbyte/destination-local-json
+      discard_format: true
     - expected_format: csv
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-local-json/src/main/resources/spec.json
       connector: airbyte/destination-local-csv
+      discard_format: true
   https:
     # Specify properties for source.
     read:
