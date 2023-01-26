@@ -40,9 +40,6 @@ affinity: {}
 # the Airbyte connector. Otherwise only the connection properties defined in Fybrik taxonomy are used.
 # To process the properties according to connector type special metadata properties are defined:
 # - expected_format: contains the format of the source/destination.
-# - emit_format: if defined then the connection format should be emitted.
-# - emit_asset_key: if defined then its value should be the key of the asset name. for example if it is equal to
-#   `emit_asset_key: dataset_name` then the pair `dataset_name: asset-name` is added.
 #
 # The metadata properties are optional and are not passed to the connector.
 connectors:
@@ -50,49 +47,51 @@ connectors:
     # Specify properties for source.
     read:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/main/resources/spec.json
-      replication_method:
-        method: "STANDARD"
-      connector: airbyte/source-mysql
+      - replication_method:
+          method: "STANDARD"
+        connector: airbyte/source-mysql
     # Specify properties for destination.
     write:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-mysql/src/main/resources/spec.json
-      connector: airbyte/destination-mysql
+      - connector: airbyte/destination-mysql
   google-sheets:
     # Specify properties for source.
     read:
       # https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-google-sheets/google_sheets_source/spec.yaml
-      connector: airbyte/source-google-sheets
+      -  connector: airbyte/source-google-sheets
     # Specify properties for destination.
     write:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-google-sheets/destination_google_sheets/spec.json
-      connector: airbyte/destination-google-sheets
+      - connector: airbyte/destination-google-sheets
   postgres:
     # Specify properties for source.
     read:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/main/resources/spec.json
-      connector: airbyte/source-postgres
+      - connector: airbyte/source-postgres
     write:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/resources/spec.json
-      connector: airbyte/destination-postgres
-      # The default schema tables are written to if the source does not specify a namespace. The usual value for this field is "public".
-      schema: public
+      - connector: airbyte/destination-postgres
+        # The default schema tables are written to if the source does not specify a namespace. The usual value for this field is "public".
+        schema: public
   us-census:
     # Specify properties for source.
     read:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-us-census/source_us_census/spec.json
-      connector: airbyte/source-us-census
+      - connector: airbyte/source-us-census
   localfile:
     write:
-      expected_format: json
+    - expected_format: json
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-local-json/src/main/resources/spec.json
       connector: airbyte/destination-local-json
+    - expected_format: csv
+      # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-local-json/src/main/resources/spec.json
+      connector: airbyte/destination-local-csv
   https:
     # Specify properties for source.
     read:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-file/source_file/spec.json
-      connector: airbyte/source-file
-      emit_format: true
-      provider:
-        storage: HTTPS
-      # dataset_name is the Name of the final table to replicate this file into.
-      emit_asset_key: dataset_name
+      - connector: airbyte/source-file
+        provider:
+          storage: HTTPS
+        # dataset_name is the Name of the final table to replicate this file into.
+        dataset_name: userdata

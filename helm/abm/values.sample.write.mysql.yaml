@@ -11,6 +11,7 @@ assets:
         database: test
         host: host.docker.internal
         port: 3306
+    format: csv
     vault:
       write:
         address: http://vault.fybrik-system:8200
