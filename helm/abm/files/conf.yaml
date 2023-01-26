@@ -37,7 +37,7 @@ data:
             {{- if hasKey $candidateConnectorsReadWriteMap $operation }}
               {{- $candidateConnectorsList := get $candidateConnectorsReadWriteMap $operation }}
               {{- $connector := include "airbyte-module.get-connector" (dict "connectionFormat" $format "additionalProperties" $candidateConnectorsList) | mustFromJson }}
-              {{- if not (hasKey $connector "discard_format") }}
+              {{- if hasKey $connector "emit_format" }}
                 {{- $_ := set $connector "format" $format }}
               {{- end }}
               {{- include "airbyte-module.remove-metadata-keys" $connector }}
