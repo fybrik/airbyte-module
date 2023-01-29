@@ -15,12 +15,12 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
 
 1. Install Fybrik Prerequisites. Follow the instruction in the Fybrik [Quick Start Guide](https://fybrik.io/dev/get-started/quickstart/). Stop before the "Install control plane" section.
 
-1. Before installing the control plane, we need to customize the [Fybrik taxonomy](https://fybrik.io/dev/tasks/custom-taxonomy/), to define new connection and interface types. This customization requires [go](https://go.dev/dl/) version 1.17 or above. Please note that in this tutorial a built-in catalog called `katalog` is used as opposed to the default Openmetadata catalog used in Fybrik. Run:
+1. Install Fybrik with a built-in catalog, called Katalog, as opposed to the Openmetadata catalog which is installed by default.
+
     ```bash
     cd $FYBRIK_DIR
-    go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json $AIRBYTE_MODULE_DIR/fybrik/fybrik-taxonomy-customize.yaml
     helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-    helm install fybrik charts/fybrik --set coordinator.catalog=katalog --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
+    helm install fybrik charts/fybrik --set coordinator.catalog=katalog --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait
     ```
 
 1. Install the Airbyte module:
@@ -44,8 +44,8 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
 
 1. Create an asset (the `userdata` asset) and an application that requires this asset:
    ```bash
-   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/read-flow/asset.yaml
-   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/read-flow/application.yaml
+   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/read-flow/asset.yaml -n fybrik-airbyte-sample
+   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/read-flow/application.yaml -n fybrik-airbyte-sample
    ```
 
 1. After the application is created, the Fybrik manager attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the `userdata` dataset, and deploys it in the `fybrik-blueprints` namespace. To verify that the Airbyte module was indeed deployed, run:
@@ -57,7 +57,7 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
    ```bash
    cd $AIRBYTE_MODULE_DIR/helm/client
    ./deploy_airbyte_module_client_pod.sh
-   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata
+   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-read-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata
    ```
 
 # Writing Dataset with Fybrik Application
@@ -70,8 +70,8 @@ Repeat steps 1-5 above.
 
 6. Create an asset (the `userdata` asset), the policy to access it (we use a policy that does not restrict access nor mandate any transformations), and an application that requires this asset:
    ```bash
-   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/asset.yaml
-   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/application.yaml
+   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/asset.yaml -n fybrik-airbyte-sample
+   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/application.yaml -n fybrik-airbyte-sample
    ```
 
 1. After the application is created, the Fybrik manager attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the `userdata` dataset, and deploys it in the `fybrik-blueprints` namespace. To verify that the Airbyte module was indeed deployed, run:
@@ -84,7 +84,7 @@ Repeat steps 1-5 above.
    export AIRBYTE_POD_NAME=$(kubectl get pods -n fybrik-blueprints | grep airbyte |awk '{print $1}')
    cd $AIRBYTE_MODULE_DIR/helm/client
    ./deploy_airbyte_module_client_pod.sh
-   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata --operation put
+   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-write-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata --operation put
    kubectl exec $AIRBYTE_POD_NAME -n fybrik-blueprints -- cat /local/airbyte_out/_airbyte_raw_testing.jsonl
    ```
 

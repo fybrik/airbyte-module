@@ -1,14 +1,14 @@
 apiVersion: app.fybrik.io/v1beta1
 kind: FybrikApplication
 metadata:
-  name: my-app
+  name: my-app-read
   labels:
-    app: my-app
+    app: my-app-read
 spec:
   selector:
     workloadSelector:
       matchLabels:
-        app: my-app
+        app: my-app-read
   appInfo:
     intent: Fraud Detection
   data:

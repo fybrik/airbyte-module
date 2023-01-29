@@ -26,13 +26,18 @@ class GenericConnector:
         if 'connector' not in self.config:
             raise ValueError("'connector' field missing from configuration")
 
-        if 'vault_credentials' in self.config:
-            vault_credentials = self.config['vault_credentials']
-            del self.config['vault_credentials']
+        if 'vault_credentials' in config:
+            vault_credentials = config['vault_credentials']
             secrets = get_secrets_from_vault(vault_credentials=vault_credentials, datasetID=asset_name)
             if secrets:
-                # merge config with secrets returned by vault
-                self.config = dict(self.config, **secrets)
+               # if the secret has nested structure then it is saved as a json object
+               for key, value in secrets.items():
+                 try:
+                   secrets[key] = json.loads(value)
+                 except BaseException:
+                   continue
+               # merge config with secrets returned by vault
+               self.config = dict(self.config, **secrets)
             else:
                 logger.info("no secrets returned by vault")
 

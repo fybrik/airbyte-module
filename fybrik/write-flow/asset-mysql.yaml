@@ -1,0 +1,19 @@
+apiVersion: katalog.fybrik.io/v1alpha1
+kind: Asset
+metadata:
+  name: userdata
+spec:
+  secretRef: 
+    name: userdata
+  details:
+    dataFormat: csv
+    connection:
+      name: mysql
+      mysql:
+        host: host.docker.internal
+        port: 3306
+        database: test
+  metadata:
+    name: test data
+    geography: theshire
+

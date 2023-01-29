@@ -1,0 +1,24 @@
+# Try it with `helm install --generate-name --dry-run -f helm/abm/values.sample.read.mysql.yaml helm/abm`
+labels:
+  name: 012d42539692bba841a7
+  namespace: default
+uuid: "12345678"
+assets:
+- args:
+  - connection:
+      name: mysql
+      mysql:
+        database: test
+        host: host.docker.internal
+        port: 3306
+    format: csv
+    vault:
+      read:
+        address: http://vault.fybrik-system:8200
+        authPath: /v1/auth/kubernetes/login
+        role: module
+        secretPath: /v1/kubernetes-secrets/bucket-creds?namespace=fybrik-system
+  assetID: new-data-parquet
+  capability: read
+
+

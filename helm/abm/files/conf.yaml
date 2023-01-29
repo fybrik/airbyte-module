@@ -1,14 +1,53 @@
 app-uuid: {{ .Values.uuid | default "app-uuid-missing" }}
 {{ if .Values.assets -}}
 data:
+{{- $allConnectorsMap := .Values.connectors }}
 {{- range $asset := .Values.assets }}
-  - name: {{  $asset.assetID | quote }}
+  - name: {{ $asset.assetID | quote -}}
+    {{- $operation := $asset.capability }}
     {{- if and (.args) (eq (len .args) 1) -}}
-    {{- with (index .args 0) }}
-    {{- toYaml . | nindent 4 }}
+       {{- with (index .args 0) }}
+       {{- $format := .format }}
+         {{- /* output vault properties */ -}}
+         {{- if .vault }}
+           {{- range $k, $v := .vault }}
+             {{- if eq $k $operation }}
+                {{- print "vault_credentials:" | nindent 4 }}
+                {{- if $v.address }}
+                   {{- print "address: " $v.address | nindent 6 }}
+                {{- end }}
+                {{- if $v.authPath }}
+                   {{- print "authPath: " $v.authPath | nindent 6 }}
+                {{- end }}
+                {{- if $v.role }}
+                   {{- print "role: " $v.role  | nindent 6 }}
+                {{- end }}
+                {{- if $v.secretPath }}
+                   {{- print "secretPath: " $v.secretPath | nindent 6 }}
+                {{- end }}
+             {{- end }}
+           {{- end }}
+         {{- end }}
+         {{- print "connection:" | nindent 4 }}
+         {{- /* output the connection details. If additional properties defined in values.yaml then merge them. */ -}}
+         {{- $connectionName := .connection.name }}
+         {{- $connectionDetails := get .connection .connection.name }}
+         {{- if hasKey $allConnectorsMap $connectionName }}
+            {{- $candidateConnectorsReadWriteMap := get $allConnectorsMap $connectionName }}
+            {{- if hasKey $candidateConnectorsReadWriteMap $operation }}
+              {{- $candidateConnectorsList := get $candidateConnectorsReadWriteMap $operation }}
+              {{- $connector := include "airbyte-module.get-connector" (dict "connectionFormat" $format "additionalProperties" $candidateConnectorsList) | mustFromJson }}
+              {{- if hasKey $connector "emit_format" }}
+                {{- $_ := set $connector "format" $format }}
+              {{- end }}
+              {{- include "airbyte-module.remove-metadata-keys" $connector }}
+              {{- $connectionDetails := merge $connectionDetails $connector }}
+            {{- end }}
+         {{- end }}
+         {{- toYaml .connection | nindent 6 }}
+       {{- end }}
     {{- end }}
-    {{- end }}
-{{- end -}}
+{{- end }}
 {{- else -}}
 data: []
 {{- end -}}

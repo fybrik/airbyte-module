@@ -19,7 +19,7 @@ spec:
           name: fybrik-arrow-flight
           fybrik-arrow-flight:
             hostname: "{{ .Release.Name }}.{{ .Release.Namespace }}"
-            port: "80"
+            port: 80
             scheme: grpc
       supportedInterfaces:
         - source:
@@ -35,8 +35,11 @@ spec:
             protocol: us-census
             dataformat: csv
         - source:
-            protocol: file
+            protocol: https
             dataformat: csv
+        - source:
+            protocol: https
+            dataformat: parquet
     - capability: read
       scope: workload
       api:
@@ -44,7 +47,7 @@ spec:
           name: http
           http:
             hostname: "{{ .Release.Name }}.{{ .Release.Namespace }}"
-            port: "79"
+            port: 79
             scheme: grpc
       supportedInterfaces:
         - source:
@@ -60,8 +63,11 @@ spec:
             protocol: us-census
             dataformat: csv
         - source:
-            protocol: file
+            protocol: https
             dataformat: csv
+        - source:
+            protocol: https
+            dataformat: parquet
     - capability: write
       scope: workload
       api:
@@ -69,7 +75,7 @@ spec:
           name: fybrik-arrow-flight
           fybrik-arrow-flight:
             hostname: "{{ .Release.Name }}.{{ .Release.Namespace }}"
-            port: "80"
+            port: 80
             scheme: grpc
       supportedInterfaces:
         - sink:
@@ -82,11 +88,8 @@ spec:
             protocol: google-sheets
             dataformat: csv
         - sink:
-            protocol: us-census
-            dataformat: csv
-        - sink:
-            protocol: file
-            dataformat: csv
+            protocol: localfile
+            dataformat: json
     - capability: write
       scope: workload
       api:
@@ -94,7 +97,7 @@ spec:
           name: http
           http:
             hostname: "{{ .Release.Name }}.{{ .Release.Namespace }}"
-            port: "79"
+            port: 79
             scheme: grpc
       supportedInterfaces:
         - sink:
@@ -110,6 +113,6 @@ spec:
             protocol: us-census
             dataformat: csv
         - sink:
-            protocol: file
-            dataformat: csv
+            protocol: localfile
+            dataformat: json
 

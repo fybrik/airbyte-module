@@ -45,7 +45,7 @@ class HttpBasicClientAuthHandler(fl.ClientAuthHandler):
         return self.token
 
 request = {
-    "asset": "write_test",
+    "asset": "userdata",
     # The request must contain the json_schema of the written data.
     "json_schema": '{"$schema": "http://json-schema.org/draft-07/schema#", "type": "object",  "properties": {"Name": { "type": "string" }, "DOB": { "type": "string" } }}'
   }
