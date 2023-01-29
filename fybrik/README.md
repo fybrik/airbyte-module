@@ -15,7 +15,8 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
 
 1. Install Fybrik Prerequisites. Follow the instruction in the Fybrik [Quick Start Guide](https://fybrik.io/dev/get-started/quickstart/). Stop before the "Install control plane" section.
 
-1. Install Fybrik with built-in catalog called `katalog`. This is used as opposed to the default Openmetadata catalog used in Fybrik.
+1. Install Fybrik with a built-in catalog, called Katalog, as opposed to the Openmetadata catalog which is installed by default.
+
     ```bash
     cd $FYBRIK_DIR
     helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
