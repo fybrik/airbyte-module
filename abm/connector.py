@@ -77,11 +77,11 @@ class GenericConnector:
 
 
     '''
-    Return the stream name or an empty string if such not defined for the conenctor.
+    Return the stream name or an empty string if such not defined for the connector.
     '''
     def get_stream_name(self):
         if "table" in self.config:
-            # The database table is the stream name is such exists
+            # The database table is the stream name if exists
             return self.config["table"]
         return ""
 
