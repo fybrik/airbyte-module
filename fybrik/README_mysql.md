@@ -90,10 +90,6 @@ EOF
    kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/read-flow/application.yaml -n fybrik-airbyte-sample
    ```
 
-   Note: 
-   - The asset in `asset.yaml` has connection of type https. For other connection types `asset.yaml` should be updated. For example, for asset-mysql.yaml can be used for mysql connection.
-   - 
-
 1. After the application is created, the Fybrik manager attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the `userdata` dataset, and deploys it in the `fybrik-blueprints` namespace. To verify that the Airbyte module was indeed deployed, run:
    ```bash
    kubectl get pods -n fybrik-blueprints
