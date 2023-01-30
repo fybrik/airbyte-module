@@ -34,6 +34,13 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
    kubectl config set-context --current --namespace=fybrik-airbyte-sample
    ```
 
+1. Create a policy to allow access to any asset (we use a policy that does not restrict access nor mandate any transformations):
+   ```bash
+   kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_MODULE_DIR/fybrik/sample-policy.rego
+   kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego
+   while [[ $(kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
+   ```
+
 1. Setup and initialize mysql for reading a dataset
 
     1. Deploy [mysql](https://bitnami.com/stack/mysql/helm) helm chart in `fybrik-airbyte-sample` namespace:
@@ -75,14 +82,6 @@ stringData:
   password: "${MYSQL_ROOT_PASSWORD}"
 EOF
   ```
-
-1. Create a policy to allow access to any asset (we use a policy that does not restrict access nor mandate any transformations):
-   ```bash
-   kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_MODULE_DIR/fybrik/sample-policy.rego
-   kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego
-   while [[ $(kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
-   ```
-
 
 1. Create an asset (the `userdata` asset) and an application that requires this asset:
    ```bash
@@ -131,20 +130,20 @@ Repeat steps 1-5 above.
 
 1. Register the credentials required for accessing the dataset as a kubernetes secret. Replace the value for MYSQL_ROOT_PASSWORD with the mysql service password as described in the section above:
 
-  ```bash
- cat << EOF | kubectl apply -f -
-apiVersion: v1
-kind: Secret
-metadata:
-  name: userdata
-type: Opaque
-stringData:
-  username: root
-  password: "${MYSQL_ROOT_PASSWORD}"
-EOF
-  ```
+      ```bash
+      cat << EOF | kubectl apply -f -
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: userdata
+      type: Opaque
+      stringData:
+        username: root
+        password: "${MYSQL_ROOT_PASSWORD}"
+      EOF
+      ```
 
-6. Create an asset (the `userdata` asset), the policy to access it (we use a policy that does not restrict access nor mandate any transformations), and an application that requires this asset:
+1. Create an asset (the `userdata` asset), the policy to access it (we use a policy that does not restrict access nor mandate any transformations), and an application that requires this asset:
    ```bash
    kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/asset-mysql.yaml -n fybrik-airbyte-sample
    kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/application.yaml -n fybrik-airbyte-sample
