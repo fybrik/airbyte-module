@@ -77,7 +77,7 @@ class GenericConnector:
 
 
     '''
-    Return the stream name or an empty string if such not defined for the connector.
+    Return the stream name if such provided. Otherwise return an empty string.
     '''
     def get_stream_name(self):
         if "table" in self.config:
