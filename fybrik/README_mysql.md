@@ -15,12 +15,6 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
 
 1. Install Fybrik Prerequisites. Follow the instruction in the Fybrik [Quick Start Guide](https://fybrik.io/dev/get-started/quickstart/). Stop before the "Install control plane" section.
 
-1. Install mysql service in `fybrik-system` namespace:
-   ```bash
-   helm repo add bitnami https://charts.bitnami.com/bitnami
-   helm install mysql bitnami/mysql -n fybrik-system
-   ```
-
 1. Install Fybrik with a built-in catalog, called Katalog, as opposed to the Openmetadata catalog which is installed by default.
 
     ```bash
