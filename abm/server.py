@@ -166,9 +166,6 @@ class ABMFlightServer(fl.FlightServerBase):
             asset_name = command['asset']
             json_schema_str = command['json_schema']
             json_schema=json.loads(json_schema_str)
-            stream_name_len = 7
-            # random generation of the stream name
-            stream_name = ''.join(random.choices(string.ascii_lowercase, k=stream_name_len))
         except BaseException as err:
             logger.error(f"Unexpected {err=}, {type(err)=}")
             raise
@@ -180,6 +177,11 @@ class ABMFlightServer(fl.FlightServerBase):
         with Config(self.config_path) as config:
             asset_conf = config.for_asset(asset_name)
             connector = GenericConnector(asset_conf, logger, self.workdir, asset_name)
+            stream_name = connector.get_stream_name()
+            if stream_name == "":
+                stream_name_len = 7
+                # random generation of the stream name
+                stream_name = ''.join(random.choices(string.ascii_lowercase, k=stream_name_len))
             stream = AirbyteStream(name=stream_name,supported_sync_modes=[SyncMode.full_refresh],json_schema=json_schema)
             # TODO: Params to the Airbyte objects, such as destination_sync_mode, can be configurable using the arrow-flight request
             streams = [ConfiguredAirbyteStream(destination_sync_mode=DestinationSyncMode.append, sync_mode=SyncMode.full_refresh, stream=stream)]
