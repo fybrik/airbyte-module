@@ -1,11 +1,11 @@
 ### Version compatibility matrix
 
-| Fybrik           | AFM     | Command
-| ---              | ---     | ---
-| 0.7.x            | 0.1.x   | `https://github.com/fybrik/airbyte-module/releases/download/v0.1.0/module.yaml`
-| 1.0.x            | 0.2.x   | `https://github.com/fybrik/airbyte-module/releases/download/v0.2.0/module.yaml`
-| 1.1.x            | 0.2.x   | `https://github.com/fybrik/airbyte-module/releases/download/v0.2.0/module.yaml`
-| master           | master  | `https://raw.githubusercontent.com/fybrik/airbyte-module/master/module.yaml`
+| Fybrik | ABM    | Command                                                                         |
+|--------|--------|---------------------------------------------------------------------------------|
+| 0.7.x  | 0.1.x  | `https://github.com/fybrik/airbyte-module/releases/download/v0.1.0/module.yaml` |
+| 1.0.x  | 0.2.x  | `https://github.com/fybrik/airbyte-module/releases/download/v0.2.0/module.yaml` |
+| 1.1.x  | 0.2.x  | `https://github.com/fybrik/airbyte-module/releases/download/v0.2.0/module.yaml` |
+| master | master | `https://raw.githubusercontent.com/fybrik/airbyte-module/master/module.yaml`    |
 
 # Accessing a Dataset by a Fybrik Application
 

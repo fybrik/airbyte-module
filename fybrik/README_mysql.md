@@ -1,12 +1,3 @@
-### Version compatibility matrix
-
-| Fybrik           | AFM     | Command
-| ---              | ---     | ---
-| 0.7.x            | 0.1.x   | `https://github.com/fybrik/airbyte-module/releases/download/v0.1.0/module.yaml`
-| 1.0.x            | 0.2.x   | `https://github.com/fybrik/airbyte-module/releases/download/v0.2.0/module.yaml`
-| 1.1.x            | 0.2.x   | `https://github.com/fybrik/airbyte-module/releases/download/v0.2.0/module.yaml`
-| master           | master  | `https://raw.githubusercontent.com/fybrik/airbyte-module/master/module.yaml`
-
 # Reading a Dataset by a Fybrik Application
 
 We explain how, using an Airbyte FybrikModule, a workload can access data stored in google-sheets, postgres, and other data stores supported by Airbyte connectors. To do so a FybrikApplication (i.e. the request) must be submitted indicating the desired data set(s). In this example, we use a dataset stored in mysql database.
@@ -55,7 +46,7 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
       mysql -h mysql.fybrik-airbyte-sample.svc.cluster.local -uroot -p"$MYSQL_ROOT_PASSWORD"
       ```
    
-    3. In mysql client shell insert the following commands to upload fake data into a new database called `fybrik`:
+    3. In a mysql client shell prompt insert the following commands to upload fake data into a new database called `fybrik`:
       ```bash
       create database fybrik;
       create table fybrik.PS_20174392719_1491204439457_log ( step int, type varchar(255), amount varchar(255), nameOrig varchar(255), oldbalanceOrg varchar(255), newbalanceOrig varchar(255), nameDest varchar(255), oldbalanceDest varchar(255), newbalanceDest varchar(255), isFraud int, isFlaggedFraud int );
@@ -123,7 +114,7 @@ Repeat steps 1-5 above.
       mysql -h mysql.fybrik-airbyte-sample.svc.cluster.local -uroot -p"$MYSQL_ROOT_PASSWORD"
       ```
    
-    3. In mysql client shell insert the following commands to upload fake data into a new database called `test`:
+    3. In a mysql client shell prompt insert the following commands to create a new database called `test`:
       ```bash
       create database test;
       ```
