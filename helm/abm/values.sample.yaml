@@ -6,12 +6,16 @@ uuid: "12345678"
 assets:
 - args:
   - connection:
-      name: file
-      file:
-        connector: "airbyte/source-file"
-        dataset_name: userdata
-        format: parquet
+      name: https
+      https:
         url: "https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet"
-        provider:
-          storage: HTTPS
+    format: parquet
+    vault:
+      write:
+        address: http://vault.fybrik-system:8200
+        authPath: /v1/auth/kubernetes/login
+        role: module
+        secretPath: /v1/kubernetes-secrets/bucket-creds?namespace=fybrik-system
+  assetID: new-data-parquet
+  capability: read
   assetID: "userdata"
