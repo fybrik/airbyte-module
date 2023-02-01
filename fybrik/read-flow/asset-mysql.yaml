@@ -10,9 +10,9 @@ spec:
     connection:
       name: mysql
       mysql:
-        host: host.docker.internal
+        host: mysql.fybrik-airbyte-sample
         port: 3306
-        database: test
+        database: fybrik
   metadata:
     name: test data
     geography: theshire 
