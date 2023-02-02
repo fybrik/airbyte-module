@@ -17,13 +17,13 @@ def fake_dataset(num_entries):
         for i in range(num_entries):
            arr.append(f.date_of_birth())
         arrays.append(arr)
-        column_names.append("DOB")
+        column_names.append("dob")
 
         arr = []
         for i in range(num_entries):
            arr.append(f.name())
         arrays.append(arr)
-        column_names.append("Name")
+        column_names.append("name")
 
         return arrays, column_names
 
@@ -47,7 +47,7 @@ class HttpBasicClientAuthHandler(fl.ClientAuthHandler):
 request = {
     "asset": "userdata",
     # The request must contain the json_schema of the written data.
-    "json_schema": '{"$schema": "http://json-schema.org/draft-07/schema#", "type": "object",  "properties": {"Name": { "type": "string" }, "DOB": { "type": "string" } }}'
+    "json_schema": '{"$schema": "http://json-schema.org/draft-07/schema#", "type": "object",  "properties": {"name": { "type": ["null", "string"] }, "dob": { "type": ["null", "string"] } }}'
   }
 
 def main(port):

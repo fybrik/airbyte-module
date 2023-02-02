@@ -2,6 +2,7 @@ app-uuid: {{ .Values.uuid | default "app-uuid-missing" }}
 {{ if .Values.assets -}}
 data:
 {{- $allConnectorsMap := .Values.connectors }}
+{{- $normalization := .Values.normalization }}
 {{- range $asset := .Values.assets }}
   - name: {{ $asset.assetID | quote -}}
     {{- $operation := $asset.capability }}
@@ -45,6 +46,10 @@ data:
             {{- end }}
          {{- end }}
          {{- toYaml .connection | nindent 6 }}
+         {{- if and $normalization (hasKey $normalization .connection.name) }}
+            {{- print "normalization:" | nindent 4 }}
+            {{- toYaml (get $normalization .connection.name) | nindent 6 }}
+         {{- end }}
        {{- end }}
     {{- end }}
 {{- end }}

@@ -4,6 +4,7 @@
 #
 
 from fybrik_python_logging import init_logger, logger, DataSetID, ForUser
+from .normalization import NormalizationConnector
 from .config import Config
 from .connector import GenericConnector
 from .ticket import ABMTicket
@@ -185,7 +186,7 @@ class ABMFlightServer(fl.FlightServerBase):
             stream = AirbyteStream(name=stream_name,supported_sync_modes=[SyncMode.full_refresh],json_schema=json_schema)
             # TODO: Params to the Airbyte objects, such as destination_sync_mode, can be configurable using the arrow-flight request
             streams = [ConfiguredAirbyteStream(destination_sync_mode=DestinationSyncMode.append, sync_mode=SyncMode.full_refresh, stream=stream)]
-            command, catalog = connector.create_write_command(ConfiguredAirbyteCatalog(streams=streams).json())
+            command, catalog = connector.create_write_command(ConfiguredAirbyteCatalog(streams=streams).json(exclude_unset=True, exclude_none=True))
             socket, container = connector.open_socket_to_container(command)
             idx = 0
             record_reader = reader.to_reader()
@@ -206,6 +207,11 @@ class ABMFlightServer(fl.FlightServerBase):
                     logger.error(f"Unexpected {err=}, {type(err)=}")
                     raise
             connector.close_socket_to_container(socket, container)
+            if 'normalization' in asset_conf:
+                logger.info('starting normalization')
+                normalization_connector = NormalizationConnector(asset_conf, logger, self.workdir, asset_name)
+                command = normalization_connector.create_normalization_command(catalog=catalog,config=connector.conf_file)
+                normalization_connector.run_container(command)
             catalog.close()
             
 
