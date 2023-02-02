@@ -103,6 +103,6 @@ connectors:
 # ref: https://docs.airbyte.com/understanding-airbyte/basic-normalization
 normalization:
    mysql:
-     connector: airbyte/normalization-mysql:0.2.25
+     image: airbyte/normalization-mysql:0.2.25
      integrationType: mysql
      airbyteVersion: 0.40.14

@@ -12,7 +12,7 @@ data:
         username: root
         password: password
     normalization:
-      connector: airbyte/normalization-mysql:0.2.25
+      image: airbyte/normalization-mysql:0.2.25
       integrationType: mysql
       airbyteVersion: 0.40.14
 
