@@ -8,12 +8,12 @@ import tempfile
 import pyarrow as pa
 from pyarrow import json as pa_json
 from .vault import get_secrets_from_vault
+from .container import Container
 
 MOUNTDIR = '/local'
 CHUNKSIZE = 1024
-CTRLD = '\x04'.encode()
 
-class GenericConnector:
+class GenericConnector(Container):
     def __init__(self, config, logger, workdir, asset_name=""):
         if 'connection' not in config:
             raise ValueError("'connection' field missing from configuration")
@@ -41,19 +41,7 @@ class GenericConnector:
             else:
                 logger.info("no secrets returned by vault")
 
-        self.workdir = workdir
-        # Potentially the fybrik-blueprint pod for the airbyte module can start before the docker daemon pod, causing
-        # docker.from_env() to fail
-        retryLoop = 0
-        while retryLoop < 10:
-            try:
-                self.client = docker.from_env()
-            except Exception as e:
-                print('error on docker.from_env() ' + str(e) + ' sleep and retry.  Retry count = ' + str(retryLoop))
-                time.sleep(1)
-                retryLoop += 1
-            else:
-                retryLoop = 10
+        super().__init__(logger, workdir)
 
         self.connector = self.config['connector']
 
@@ -61,8 +49,6 @@ class GenericConnector:
         # and sent to the connector. First, we must remove the 'connector' entry,
         # since the Airbyte connectors do not recognize this field
         del self.config['connector']
-
-        self.logger = logger
 
         # if the port field is a string, cast it to integer
         if 'port' in self.config and type(self.config['port']) == str:
@@ -87,14 +73,6 @@ class GenericConnector:
 
     def __del__(self):
         self.conf_file.close()
-
-    '''
-    Translate the name of the temporary file in the host to the name of the same file
-    in the container.
-    For instance, it the path is '/tmp/tmp12345', return '/local/tmp12345'.
-    '''
-    def name_in_container(self, path):
-        return path.replace(self.workdir, MOUNTDIR, 1)
 
     '''
     Extract only the relevant data in "RECORD" lines returned by an Airbyte read operation.
@@ -141,41 +119,17 @@ class GenericConnector:
     Mount the workdir on /local. Remove the container after done.
     '''
     def run_container(self, command):
-        self.logger.debug("running command: " + command)
-        try:
-            reply = self.client.containers.run(self.connector, command,
-                volumes=[self.workdir + ':' + MOUNTDIR], network_mode='host',
-                remove=True, stream=True)
-            return self.filter_reply(reply)
-        except docker.errors.DockerException as e:
-            self.logger.error('Running of docker container failed',
-                              extra={'error': str(e)})
-            return None
+        volumes=[self.workdir + ':' + MOUNTDIR]
+        return super().run_container(command, self.connector, volumes, remove=True, detach=True, stream=True)
 
     def open_socket_to_container(self, command):
-        container = self.client.containers.run(self.connector, detach=True,
-                             tty=True, stdin_open=True,
-                             volumes=[self.workdir + ':' + MOUNTDIR], network_mode='host',
-                             command=command, remove=True)
-        # attach to the container stdin socket
-        s = container.attach_socket(params={'stdin': 1, 'stream': 1, 'stdout': 1, 'stderr': 1})
-        s._sock.setblocking(True)
-        return s, container
-
-    def close_socket_to_container(self, s, container):
-        s._sock.sendall(CTRLD)  # ctrl d to finish things up
-        s._sock.close()
-        container.stop()
-        self.client.close()
-
-    def write_to_socket_to_container(self, s, binary_textline):
-        s._sock.sendall(binary_textline)
-        s.flush()
+        volumes=[self.workdir + ':' + MOUNTDIR]
+        return super().open_socket_to_container(command, self.connector, volumes)
 
     # Given configuration, obtain the Airbyte Catalog, which includes list of datasets
     def get_catalog(self):
         ret = []
-        for lines in self.run_container('discover --config ' + self.name_in_container(self.conf_file.name)):
+        for lines in self.run_container('discover --config ' + self.name_in_container(self.conf_file.name, MOUNTDIR)):
             ret = ret + lines
         return ret
 
@@ -236,9 +190,9 @@ class GenericConnector:
 
         # step 3: Run the Airbyte read operation to read the datasets
         return self.run_container('read --config '
-                      + self.name_in_container(self.conf_file.name)
+                      + self.name_in_container(self.conf_file.name, MOUNTDIR)
                       + ' --catalog '
-                      + self.name_in_container(catalog_file.name))
+                      + self.name_in_container(catalog_file.name, MOUNTDIR))
 
     '''
     Obtain an AirbyteCatalog json structure, and translate it to a dictionary.
@@ -311,8 +265,8 @@ class GenericConnector:
         # there is no discover on the write
         tmp_catalog = self.create_write_catalog(schema)
 
-        command = 'write --config ' + self.name_in_container(self.conf_file.name) + \
-                  ' --catalog ' + self.name_in_container(tmp_catalog.name)
+        command = 'write --config ' + self.name_in_container(self.conf_file.name, MOUNTDIR) + \
+                  ' --catalog ' + self.name_in_container(tmp_catalog.name, MOUNTDIR)
         return command, tmp_catalog
 
     '''
@@ -323,8 +277,8 @@ class GenericConnector:
         # The catalog to be provided to the write command is from an input schema -
         # there is no discover on the write
         tmp_catalog = self.create_write_catalog(schema)
-        command = 'write --config ' + self.name_in_container(self.conf_file.name) + \
-                  ' --catalog ' + self.name_in_container(tmp_catalog.name)
+        command = 'write --config ' + self.name_in_container(self.conf_file.name, MOUNTDIR) + \
+                  ' --catalog ' + self.name_in_container(tmp_catalog.name, MOUNTDIR)
         s, container = self.open_socket_to_container(command)
 
         bytesToWrite = length

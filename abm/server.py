@@ -4,7 +4,7 @@
 #
 
 from fybrik_python_logging import init_logger, logger, DataSetID, ForUser
-from .normalization import NormalizationConnector
+from .normalization import NormalizationContainer
 from .config import Config
 from .connector import GenericConnector
 from .ticket import ABMTicket
@@ -209,9 +209,10 @@ class ABMFlightServer(fl.FlightServerBase):
             connector.close_socket_to_container(socket, container)
             if 'normalization' in asset_conf:
                 logger.info('starting normalization')
-                normalization_connector = NormalizationConnector(asset_conf, logger, self.workdir, asset_name)
-                command = normalization_connector.create_normalization_command(catalog=catalog,config=connector.conf_file)
-                normalization_connector.run_container(command)
+                normalization_container = NormalizationContainer(asset_conf, logger, self.workdir, asset_name)
+                command = normalization_container.create_normalization_command(catalog=catalog,config=connector.conf_file)
+                reply = normalization_container.run_container(command)
+
             catalog.close()
             
 
