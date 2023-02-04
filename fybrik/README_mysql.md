@@ -68,6 +68,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: userdata
+  namespace: fybrik-airbyte-sample
 type: Opaque
 stringData:
   username: root
@@ -129,6 +130,7 @@ Repeat steps 1-5 above.
       kind: Secret
       metadata:
         name: userdata
+        namespace: fybrik-airbyte-sample
       type: Opaque
       stringData:
         username: root
@@ -147,15 +149,22 @@ Repeat steps 1-5 above.
    kubectl get pods -n fybrik-blueprints
    ```
 
-1. To verify that the Airbyte module writes the dataset, run:
+1. Run the following commands to exceute a write command:
    ```bash
    export AIRBYTE_POD_NAME=$(kubectl get pods -n fybrik-blueprints | grep airbyte |awk '{print $1}')
    cd $AIRBYTE_MODULE_DIR/helm/client
    ./deploy_airbyte_module_client_pod.sh
    kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-write-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata --operation put
-   kubectl exec $AIRBYTE_POD_NAME -n fybrik-blueprints -- cat /local/airbyte_out/_airbyte_raw_testing.jsonl
    ```
 
+1. To verify that the Airbyte module writes the dataset, run:
+   ```bash
+   kubectl exec -it mysql-client --namespace fybrik-airbyte-sample -- bash
+   mysql -h mysql.fybrik-airbyte-sample.svc.cluster.local -uroot -p"$MYSQL_ROOT_PASSWORD"
+   use test;
+   show tables;
+   select * from demo;
+   ```
 
 # Cleanup
 
