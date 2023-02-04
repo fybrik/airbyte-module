@@ -46,9 +46,11 @@ data:
             {{- end }}
          {{- end }}
          {{- toYaml .connection | nindent 6 }}
-         {{- if and $normalization (hasKey $normalization .connection.name) }}
-            {{- print "normalization:" | nindent 4 }}
-            {{- toYaml (get $normalization .connection.name) | nindent 6 }}
+         {{- if and $normalization (eq $operation "write") }}
+            {{- if hasKey $normalization .connection.name }}
+              {{- print "normalization:" | nindent 4 }}
+              {{- toYaml (get $normalization .connection.name) | nindent 6 }}
+            {{- end }}
          {{- end }}
        {{- end }}
     {{- end }}
