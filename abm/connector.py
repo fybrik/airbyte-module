@@ -9,6 +9,7 @@ import pyarrow as pa
 from pyarrow import json as pa_json
 from .vault import get_secrets_from_vault
 from .container import Container
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 MOUNTDIR = '/local'
 CHUNKSIZE = 1024
@@ -55,6 +56,7 @@ class GenericConnector(Container):
             self.config['port'] = int(self.config['port'])
 
         self.catalog_dict = None
+        self.json_schema = None
 
         # create the temporary json file for configuration
         self.conf_file = tempfile.NamedTemporaryFile(dir=self.workdir)
@@ -75,6 +77,33 @@ class GenericConnector(Container):
         self.conf_file.close()
 
     '''
+    Remove metadata columns, if such exists, from "CATALOG" lines returned by an Airbyte read operation.
+    For instance, if a line is:
+        {'name': 'stream_name', 'json_schema': {'type': 'object', 'properties': {'_airbyte_stream_name_hashid': {'type': 'string'}, '_airbyte_ab_id': {'type': 'string'},
+        'dob': {'type': 'string'}, '_airbyte_normalized_at': {'type': 'string', 'format': 'date-time', 'airbyte_type': 'timestamp_without_timezone'},
+         'name': {'type': 'string'}, '_airbyte_emitted_at': {'type': 'string', 'format': 'date-time', 'airbyte_type': 'timestamp_with_timezone'}}}}
+    extract:
+        {'name': 'stream_name', 'json_schema': {'type': 'object', 'properties': {'dob': {'type': 'string'},'name': {'type': 'string'}}}}
+
+    These metadata columns are added in the normalization process.
+    ref:  https://docs.airbyte.com/understanding-airbyte/basic-normalization
+    '''
+    def remove_metadata_columns(self, line_dict):
+        catalog_streams = line_dict['catalog']['streams']
+        stream_name = self.get_stream_name()
+        for stream in catalog_streams:
+            # remove metadata columns for a specific stream (table) if such
+            # is provided
+            if stream_name != "" and stream['name'] != stream_name:
+                continue
+            json_schema = stream['json_schema']
+            properties = json_schema['properties']
+            for key in list(properties.keys()):
+                if key.startswith('_airbyte_'):
+                    del properties[key]
+        return json.dumps(line_dict).encode()
+
+    '''
     Extract only the relevant data in "RECORD" lines returned by an Airbyte read operation.
     For instance, if a line is:
        {"type":"RECORD","record":{"stream":"users","data":{"id":1,"col1":"record1"},"emitted_at":"1644416403239","namespace":"public"}}
@@ -82,6 +111,9 @@ class GenericConnector(Container):
        {"id":1,"col1":"record1"}
     '''
     def extract_data(self, line_dict):
+        transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
+        # Output data must conform to the declared json schema
+        transformer.transform(line_dict['record']['data'], self.json_schema)
         return json.dumps(line_dict['record']['data']).encode('utf-8')
 
     '''
@@ -100,7 +132,7 @@ class GenericConnector(Container):
                    if line_dict['type'] == 'LOG':
                        continue
                    if line_dict['type'] == 'CATALOG':
-                       ret.append(line)
+                       ret.append(self.remove_metadata_columns(line_dict))
                    elif line_dict['type'] == 'RECORD':
                        ret.append(self.extract_data(line_dict))
                    count = count + 1
@@ -120,7 +152,7 @@ class GenericConnector(Container):
     '''
     def run_container(self, command):
         volumes=[self.workdir + ':' + MOUNTDIR]
-        return super().run_container(command, self.connector, volumes, remove=True, detach=True, stream=True)
+        return super().run_container(command, self.connector, volumes=volumes, remove=True, detach=False, stream=True)
 
     def open_socket_to_container(self, command):
         volumes=[self.workdir + ':' + MOUNTDIR]
@@ -149,7 +181,7 @@ class GenericConnector(Container):
             return None
 
         schema = pa.schema({})
-        properties = self.catalog_dict['catalog']['streams'][0]['json_schema']['properties']
+        properties = self.json_schema['properties']
         for field in properties:
             type_field = properties[field]['type']
             if type(type_field) is list:
@@ -195,6 +227,19 @@ class GenericConnector(Container):
                       + self.name_in_container(catalog_file.name, MOUNTDIR))
 
     '''
+    Given a catalog return the json schema of a specific stream (table) if the stream
+    is provided. Otherwise return the json schema of the first stream.
+    '''
+    def get_stream_schema(self, catalog):
+        stream_name = self.get_stream_name()
+        streams = catalog['streams']
+        if stream_name == "":
+            return streams[0]['json_schema']
+        for stream in streams:
+            if stream['name'] == stream_name:
+                return stream['json_schema']
+
+    '''
     Obtain an AirbyteCatalog json structure, and translate it to a dictionary.
     Store this dictionary in self.catalog_dict
     '''
@@ -214,6 +259,8 @@ class GenericConnector(Container):
 
         try:
             self.catalog_dict = json.loads(airbyte_catalog[0])
+            # save the json_schema part in the catalog for later use
+            self.json_schema = self.get_stream_schema(self.catalog_dict['catalog'])
         except ValueError as err:
             self.logger.error('Failed to parse AirByte Catalog JSON',
                               extra={'error': str(err)})

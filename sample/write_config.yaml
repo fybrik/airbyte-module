@@ -3,5 +3,5 @@ data:
     connection:
       name: file
       file:
-        connector: airbyte/destination-local-json
+        connector: airbyte/destination-local-json:0.2.11
         destination_path: airbyte_out

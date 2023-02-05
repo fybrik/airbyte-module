@@ -28,7 +28,7 @@ class NormalizationContainer(Container):
     def run_container(self, command):
         volumes=[self.workdir + ':' + MOUNTDIR]
         environment=["DEPLOYMENT_MODE=OSS", "AIRBYTE_ROLE=", "WORKER_ENVIRONMENT=DOCKER", "AIRBYTE_VERSION=" + self.airbyte_version]
-        super().run_container(command, self.normalization_image, volumes, environment, remove=True, detach=True, stream=True, init=True)
+        super().run_container(command, self.normalization_image, volumes, environment, remove=True, stream=True, init=True)
 
     '''
     Creates a normalization command

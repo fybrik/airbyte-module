@@ -3,7 +3,7 @@ data:
     connection:
       name: file
       file:
-        connector: airbyte/source-file
+        connector: airbyte/source-file:0.2.33
         dataset_name: userdata
         format: parquet
         url: "https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet"

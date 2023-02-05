@@ -31,17 +31,22 @@ class Container:
     '''
     def name_in_container(self, path, mountdir):
         return path.replace(self.workdir, mountdir, 1)
+           
+    def filter_reply(self, reply):
+        return reply
 
     '''
     Run a docker container from the connector image.
     Mount the workdir on /local. Remove the container after done.
     '''
-    def run_container(self, command, image, volumes, environment=None, remove=True, detach=True, stream=True, init=False):
+    def run_container(self, command, image, volumes, environment=None, remove=True, detach=False, stream=True, init=False):
         self.logger.debug("running command: " + command)
+
         try:
-            _ = self.client.containers.run(image, volumes=volumes, network_mode='host',
+            reply = self.client.containers.run(image, volumes=volumes, network_mode='host',
                                         environment=environment,
                                         command=command, init=init, stream=stream, remove=remove, detach=detach)
+            return self.filter_reply(reply)
         except docker.errors.DockerException as e:
             self.logger.error('Running of docker container failed',
                               extra={'error': str(e)})
