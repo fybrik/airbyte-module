@@ -214,9 +214,9 @@ class GenericConnector:
         streams = []
         stream_name = self.get_stream_name()
         for stream in self.catalog_dict['catalog']['streams']:
-            if stream['name']:
-               if stream_name != "" and stream['name'] != stream_name:
-                 continue
+            if 'name' in stream:
+                if stream_name != "" and stream['name'] != stream_name:
+                    continue
             stream_dict = {}
             stream_dict['sync_mode'] = 'full_refresh'
             stream_dict['destination_sync_mode'] = 'overwrite'
