@@ -75,6 +75,16 @@ class GenericConnector:
         self.conf_file.write(json.dumps(self.config).encode('utf-8'))
         self.conf_file.flush()
 
+
+    '''
+    Return the stream name if such provided. Otherwise return an empty string.
+    '''
+    def get_stream_name(self):
+        if "table" in self.config:
+            # The database table is the stream name if exists
+            return self.config["table"]
+        return ""
+
     def __del__(self):
         self.conf_file.close()
 
@@ -202,7 +212,11 @@ class GenericConnector:
         # step 1: construct the ConfiguredAirbyteCatalog structure,
         #         for an Airbyte read operation
         streams = []
+        stream_name = self.get_stream_name()
         for stream in self.catalog_dict['catalog']['streams']:
+            if 'name' in stream:
+                if stream_name != "" and stream['name'] != stream_name:
+                    continue
             stream_dict = {}
             stream_dict['sync_mode'] = 'full_refresh'
             stream_dict['destination_sync_mode'] = 'overwrite'
