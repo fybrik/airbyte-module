@@ -212,9 +212,9 @@ class GenericConnector:
         # step 1: construct the ConfiguredAirbyteCatalog structure,
         #         for an Airbyte read operation
         streams = []
+        stream_name = self.get_stream_name()
         for stream in self.catalog_dict['catalog']['streams']:
             if stream['name']:
-               stream_name = self.get_stream_name()
                if stream_name != "" and stream['name'] != stream_name:
                  continue
             stream_dict = {}
