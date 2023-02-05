@@ -50,48 +50,48 @@ connectors:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/main/resources/spec.json
       - replication_method:
           method: "STANDARD"
-        connector: airbyte/source-mysql
+        connector: airbyte/source-mysql:0.6.13
     # Specify properties for destination.
     write:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-mysql/src/main/resources/spec.json
-      - connector: airbyte/destination-mysql
+      - connector: airbyte/destination-mysql:0.1.20
   google-sheets:
     # Specify properties for source.
     read:
       # https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-google-sheets/google_sheets_source/spec.yaml
-      -  connector: airbyte/source-google-sheets
+      -  connector: airbyte/source-google-sheets:0.2.31
     # Specify properties for destination.
     write:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-google-sheets/destination_google_sheets/spec.json
-      - connector: airbyte/destination-google-sheets
+      - connector: airbyte/destination-google-sheets:0.1.2
   postgres:
     # Specify properties for source.
     read:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/main/resources/spec.json
-      - connector: airbyte/source-postgres
+      - connector: airbyte/source-postgres:1.0.42
     write:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/resources/spec.json
-      - connector: airbyte/destination-postgres
+      - connector: airbyte/destination-postgres:0.3.26
         # The default schema tables are written to if the source does not specify a namespace. The usual value for this field is "public".
         schema: public
   us-census:
     # Specify properties for source.
     read:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-us-census/source_us_census/spec.json
-      - connector: airbyte/source-us-census
+      - connector: airbyte/source-us-census:0.1.2
   localfile:
     write:
-    - expected_format: json
-      # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-local-json/src/main/resources/spec.json
-      connector: airbyte/destination-local-json
-    - expected_format: csv
-      # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-local-json/src/main/resources/spec.json
-      connector: airbyte/destination-local-csv
+      - expected_format: json
+        # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-local-json/src/main/resources/spec.json
+        connector: airbyte/destination-local-json:0.2.11
+      - expected_format: csv
+        # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-local-json/src/main/resources/spec.json
+        connector: airbyte/destination-csv:1.0.0
   https:
     # Specify properties for source.
     read:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-file/source_file/spec.json
-      - connector: airbyte/source-file
+      - connector: airbyte/source-file:0.2.33
         emit_format: true
         provider:
           storage: HTTPS
