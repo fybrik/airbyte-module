@@ -9,7 +9,6 @@ import pyarrow as pa
 from pyarrow import json as pa_json
 from .vault import get_secrets_from_vault
 from .container import Container
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 MOUNTDIR = '/local'
 CHUNKSIZE = 1024
@@ -111,9 +110,6 @@ class GenericConnector(Container):
        {"id":1,"col1":"record1"}
     '''
     def extract_data(self, line_dict):
-        transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
-        # Output data must conform to the declared json schema
-        transformer.transform(line_dict['record']['data'], self.json_schema)
         return json.dumps(line_dict['record']['data']).encode('utf-8')
 
     '''
