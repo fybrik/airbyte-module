@@ -47,7 +47,9 @@ class HttpBasicClientAuthHandler(fl.ClientAuthHandler):
 request = {
     "asset": "userdata",
     # The request must contain the json_schema of the written data.
-    "json_schema": '{"$schema": "http://json-schema.org/draft-07/schema#", "type": "object",  "properties": {"name": { "type": ["null", "string"] }, "dob": { "type": ["null", "string"] } }}'
+    "json_schema": '{"$schema": "http://json-schema.org/draft-07/schema#", "type": "object",  "properties": {"name": { "type": ["null", "string"] }, "dob": { "type": ["null", "string"] } }}',
+    # write_mode can be append or overwrite. The default is append.
+    # "write_mode": "overwrite",
   }
 
 def main(port):

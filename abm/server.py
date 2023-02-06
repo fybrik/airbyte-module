@@ -164,6 +164,9 @@ class ABMFlightServer(fl.FlightServerBase):
     def do_put(self, context, descriptor, reader, writer):
         try:
             command = json.loads(descriptor.command)
+            write_mode = None
+            if 'write_mode' in command:
+                write_mode = command['write_mode']
             asset_name = command['asset']
             json_schema_str = command['json_schema']
             json_schema=json.loads(json_schema_str)
@@ -176,6 +179,12 @@ class ABMFlightServer(fl.FlightServerBase):
                    DataSetID: asset_name,
                    ForUser: True})
         with Config(self.config_path) as config:
+            mode = DestinationSyncMode.append
+            if write_mode:
+                if write_mode == "overwrite":
+                    mode = DestinationSyncMode.overwrite
+                if write_mode != "append":
+                    logger.debug("unknown write mode. expect overwrite or append. using default append mode")
             asset_conf = config.for_asset(asset_name)
             connector = GenericConnector(asset_conf, logger, self.workdir, asset_name)
             stream_name = connector.get_stream_name()
@@ -185,7 +194,7 @@ class ABMFlightServer(fl.FlightServerBase):
                 stream_name = ''.join(random.choices(string.ascii_lowercase, k=stream_name_len))
             stream = AirbyteStream(name=stream_name,supported_sync_modes=[SyncMode.full_refresh],json_schema=json_schema)
             # TODO: Params to the Airbyte objects, such as destination_sync_mode, can be configurable using the arrow-flight request
-            streams = [ConfiguredAirbyteStream(destination_sync_mode=DestinationSyncMode.append, sync_mode=SyncMode.full_refresh, stream=stream)]
+            streams = [ConfiguredAirbyteStream(destination_sync_mode=mode, sync_mode=SyncMode.full_refresh, stream=stream)]
             command, catalog = connector.create_write_command(ConfiguredAirbyteCatalog(streams=streams).json(exclude_unset=True, exclude_none=True))
             socket, container = connector.open_socket_to_container(command)
             idx = 0
