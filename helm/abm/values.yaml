@@ -50,7 +50,7 @@ connectors:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/main/resources/spec.json
       - replication_method:
           method: "STANDARD"
-        connector: airbyte/source-mysql:0.6.13
+        connector: airbyte/source-mysql:0.6.15
     # Specify properties for destination.
     write:
       # ref: https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-mysql/src/main/resources/spec.json
