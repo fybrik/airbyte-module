@@ -78,16 +78,19 @@ class GenericConnector(Container):
         self.conf_file.close()
 
     '''
-    Remove metadata columns, if such exists, from "CATALOG" lines returned by an Airbyte read operation.
-    For instance, if a line is:
+    This function does the following:
+    - Prune the catalog streams into only one stream: if a stream (table) is provided then use it.
+      Otherwise the first stream is used.
+    - Remove metadata columns, if such exists, from "CATALOG" lines returned by an Airbyte read operation.
+      For instance, if a line is:
         {'name': 'stream_name', 'json_schema': {'type': 'object', 'properties': {'_airbyte_stream_name_hashid': {'type': 'string'}, '_airbyte_ab_id': {'type': 'string'},
         'dob': {'type': 'string'}, '_airbyte_normalized_at': {'type': 'string', 'format': 'date-time', 'airbyte_type': 'timestamp_without_timezone'},
          'name': {'type': 'string'}, '_airbyte_emitted_at': {'type': 'string', 'format': 'date-time', 'airbyte_type': 'timestamp_with_timezone'}}}}
-    extract:
+      extract:
         {'name': 'stream_name', 'json_schema': {'type': 'object', 'properties': {'dob': {'type': 'string'},'name': {'type': 'string'}}}}
 
-    These metadata columns are added in the normalization process.
-    ref:  https://docs.airbyte.com/understanding-airbyte/basic-normalization
+      These metadata columns are added in the normalization process.
+      ref:  https://docs.airbyte.com/understanding-airbyte/basic-normalization
     '''
     def remove_metadata_columns(self, line_dict):
         catalog_streams = line_dict['catalog']['streams']
@@ -180,6 +183,7 @@ class GenericConnector(Container):
 
     '''
     Return the schema of the first dataset in the catalog.
+    If a stream (table) is provided then its schema is returned.
     Used by arrow-flight server for both the get_flight_info() and do_get().
     Not needed for the Airbyte http server.
     '''
@@ -209,6 +213,7 @@ class GenericConnector(Container):
         stream_name = self.get_stream_name()
         for stream in self.catalog_dict['catalog']['streams']:
             if 'name' in stream:
+                # read only the relavent stream if such provided
                 if stream_name != "" and stream['name'] != stream_name:
                     continue
             stream_dict = {}
