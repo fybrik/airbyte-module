@@ -17,7 +17,7 @@ def fake_dataset(num_entries):
         for i in range(num_entries):
            arr.append(f.date_of_birth())
         arrays.append(arr)
-        column_names.append("dob")
+        column_names.append("DOB")
 
         arr = []
         for i in range(num_entries):

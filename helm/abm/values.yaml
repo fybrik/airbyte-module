@@ -98,11 +98,12 @@ connectors:
         # dataset_name is the Name of the final table to replicate this file into.
         dataset_name: userdata
 
-# Atttributes related to the normzliation process. If they are provided then
+# Attributes related to the normzliation process. If they are provided then
 # normzliation process is applied.
 # ref: https://docs.airbyte.com/understanding-airbyte/basic-normalization
 normalization:
    mysql:
+     # ref: https://github.com/airbytehq/airbyte/blob/master/docs/understanding-airbyte/basic-normalization.md#airbyte-integrationbasesbase-normalization
      image: airbyte/normalization-mysql:0.2.25
      integrationType: mysql
      airbyteVersion: 0.40.14

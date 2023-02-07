@@ -8,9 +8,10 @@ import time
 CTRLD = '\x04'.encode()
 
 class Container:
-    def __init__(self, logger, workdir):
+    def __init__(self, logger, workdir, mountdir):
         self.logger = logger
         self.workdir = workdir
+        self.mountdir = mountdir
         # Potentially the fybrik-blueprint pod for the airbyte module can start before the docker daemon pod, causing
         # docker.from_env() to fail
         retryLoop = 0
@@ -29,8 +30,8 @@ class Container:
     in the container.
     For instance, it the path is '/tmp/tmp12345', return '/local/tmp12345'.
     '''
-    def name_in_container(self, path, mountdir):
-        return path.replace(self.workdir, mountdir, 1)
+    def name_in_container(self, path):
+        return path.replace(self.workdir, self.mountdir, 1)
            
     def filter_reply(self, reply):
         return reply

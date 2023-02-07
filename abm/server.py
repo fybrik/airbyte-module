@@ -183,7 +183,7 @@ class ABMFlightServer(fl.FlightServerBase):
             if write_mode:
                 if write_mode == "overwrite":
                     mode = DestinationSyncMode.overwrite
-                if write_mode != "append":
+                elif write_mode != "append":
                     logger.debug("unknown write mode. expect overwrite or append. using default append mode")
             asset_conf = config.for_asset(asset_name)
             connector = GenericConnector(asset_conf, logger, self.workdir, asset_name)

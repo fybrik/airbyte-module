@@ -41,7 +41,7 @@ class GenericConnector(Container):
             else:
                 logger.info("no secrets returned by vault")
 
-        super().__init__(logger, workdir)
+        super().__init__(logger, workdir, MOUNTDIR)
 
         self.connector = self.config['connector']
 
@@ -55,6 +55,8 @@ class GenericConnector(Container):
             self.config['port'] = int(self.config['port'])
 
         self.catalog_dict = None
+        # json_schema holds the json schema of the stream (table) to read if such stream is provided.
+        # otherwise it cobtains the json schema of the first stream in the catalog.
         self.json_schema = None
 
         # create the temporary json file for configuration
@@ -90,16 +92,27 @@ class GenericConnector(Container):
     def remove_metadata_columns(self, line_dict):
         catalog_streams = line_dict['catalog']['streams']
         stream_name = self.get_stream_name()
-        for stream in catalog_streams:
-            # remove metadata columns for a specific stream (table) if such
-            # is provided
-            if stream_name != "" and stream['name'] != stream_name:
-                continue
-            json_schema = stream['json_schema']
-            properties = json_schema['properties']
-            for key in list(properties.keys()):
-                if key.startswith('_airbyte_'):
-                    del properties[key]
+        # get the stream: if a stream (table) is provided
+        # then find it otherwise use the first stream in
+        # streams list.
+        if stream_name == "":
+            # no specific stream was provided then take the first item
+            # in the list
+            the_stream = catalog_streams[0]
+        else:
+            for stream in catalog_streams:
+                if stream['name'] == stream_name:
+                   the_stream = stream
+                   break
+        # remove metadata columns
+        properties = the_stream['json_schema']['properties']
+        for key in list(properties.keys()):
+            if key.startswith('_airbyte_'):
+                del properties[key]
+        # set the json_schema for later use
+        self.json_schema = the_stream['json_schema']
+        line_dict['catalog']['streams'] = [the_stream]
+        print(line_dict)
         return json.dumps(line_dict).encode()
 
     '''
@@ -157,7 +170,7 @@ class GenericConnector(Container):
     # Given configuration, obtain the Airbyte Catalog, which includes list of datasets
     def get_catalog(self):
         ret = []
-        for lines in self.run_container('discover --config ' + self.name_in_container(self.conf_file.name, MOUNTDIR)):
+        for lines in self.run_container('discover --config ' + self.name_in_container(self.conf_file.name)):
             ret = ret + lines
         return ret
 
@@ -218,22 +231,9 @@ class GenericConnector(Container):
 
         # step 3: Run the Airbyte read operation to read the datasets
         return self.run_container('read --config '
-                      + self.name_in_container(self.conf_file.name, MOUNTDIR)
+                      + self.name_in_container(self.conf_file.name)
                       + ' --catalog '
-                      + self.name_in_container(catalog_file.name, MOUNTDIR))
-
-    '''
-    Given a catalog return the json schema of a specific stream (table) if the stream
-    is provided. Otherwise return the json schema of the first stream.
-    '''
-    def get_stream_schema(self, catalog):
-        stream_name = self.get_stream_name()
-        streams = catalog['streams']
-        if stream_name == "":
-            return streams[0]['json_schema']
-        for stream in streams:
-            if stream['name'] == stream_name:
-                return stream['json_schema']
+                      + self.name_in_container(catalog_file.name))
 
     '''
     Obtain an AirbyteCatalog json structure, and translate it to a dictionary.
@@ -255,8 +255,6 @@ class GenericConnector(Container):
 
         try:
             self.catalog_dict = json.loads(airbyte_catalog[0])
-            # save the json_schema part in the catalog for later use
-            self.json_schema = self.get_stream_schema(self.catalog_dict['catalog'])
         except ValueError as err:
             self.logger.error('Failed to parse AirByte Catalog JSON',
                               extra={'error': str(err)})
@@ -308,8 +306,8 @@ class GenericConnector(Container):
         # there is no discover on the write
         tmp_catalog = self.create_write_catalog(schema)
 
-        command = 'write --config ' + self.name_in_container(self.conf_file.name, MOUNTDIR) + \
-                  ' --catalog ' + self.name_in_container(tmp_catalog.name, MOUNTDIR)
+        command = 'write --config ' + self.name_in_container(self.conf_file.name) + \
+                  ' --catalog ' + self.name_in_container(tmp_catalog.name)
         return command, tmp_catalog
 
     '''
@@ -320,8 +318,8 @@ class GenericConnector(Container):
         # The catalog to be provided to the write command is from an input schema -
         # there is no discover on the write
         tmp_catalog = self.create_write_catalog(schema)
-        command = 'write --config ' + self.name_in_container(self.conf_file.name, MOUNTDIR) + \
-                  ' --catalog ' + self.name_in_container(tmp_catalog.name, MOUNTDIR)
+        command = 'write --config ' + self.name_in_container(self.conf_file.name) + \
+                  ' --catalog ' + self.name_in_container(tmp_catalog.name)
         s, container = self.open_socket_to_container(command)
 
         bytesToWrite = length

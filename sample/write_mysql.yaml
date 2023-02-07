@@ -8,7 +8,7 @@ data:
         host: host.docker.internal
         port: 3306
         database: test
-        table: table
+        table: demo
         username: root
         password: password
     normalization:

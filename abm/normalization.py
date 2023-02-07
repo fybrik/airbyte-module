@@ -19,7 +19,7 @@ class NormalizationContainer(Container):
         if 'airbyteVersion'  not in config['normalization']:
            raise ValueError("'airbyteVersion' field missing from normalization section in configuration")
         self.airbyte_version = config['normalization']['airbyteVersion']
-        super().__init__(logger, workdir)
+        super().__init__(logger, workdir, MOUNTDIR)
 
     '''
     Run a docker container from the connector image.
@@ -36,8 +36,8 @@ class NormalizationContainer(Container):
     Creates a normalization command
     '''
     def create_normalization_command(self, catalog, config):
-        command = 'run --config ' + self.name_in_container(config.name, MOUNTDIR) + \
-                  ' --catalog ' + self.name_in_container(catalog.name, MOUNTDIR) + ' --integration-type ' + \
+        command = 'run --config ' + self.name_in_container(config.name) + \
+                  ' --catalog ' + self.name_in_container(catalog.name) + ' --integration-type ' + \
                   self.integration_type
 
         return command
