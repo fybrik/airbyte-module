@@ -56,7 +56,7 @@ class GenericConnector(Container):
 
         self.catalog_dict = None
         # json_schema holds the json schema of the stream (table) to read if such stream is provided.
-        # otherwise it cobtains the json schema of the first stream in the catalog.
+        # otherwise it holds the json schema of the first stream in the catalog.
         self.json_schema = None
 
         # create the temporary json file for configuration
@@ -79,8 +79,8 @@ class GenericConnector(Container):
 
     '''
     This function does the following:
-    - Prune the catalog streams into only one stream: if a stream (table) is provided then use it.
-      Otherwise the first stream is used.
+    - Prune the catalog streams into only one stream: if a stream (table) is provided then keep it.
+      Otherwise the first stream is kept.
     - Remove metadata columns, if such exists, from "CATALOG" lines returned by an Airbyte read operation.
       For instance, if a line is:
         {'name': 'stream_name', 'json_schema': {'type': 'object', 'properties': {'_airbyte_stream_name_hashid': {'type': 'string'}, '_airbyte_ab_id': {'type': 'string'},
@@ -92,10 +92,10 @@ class GenericConnector(Container):
       These metadata columns are added in the normalization process.
       ref:  https://docs.airbyte.com/understanding-airbyte/basic-normalization
     '''
-    def remove_metadata_columns(self, line_dict):
+    def prune_streams_and_remove_metadata_columns(self, line_dict):
         catalog_streams = line_dict['catalog']['streams']
         stream_name = self.get_stream_name()
-        # get the stream: if a stream (table) is provided
+        # get the stream to keep: if a stream (table) is provided
         # then find it otherwise use the first stream in
         # streams list.
         if stream_name == "":
@@ -143,7 +143,7 @@ class GenericConnector(Container):
                    if line_dict['type'] == 'LOG':
                        continue
                    if line_dict['type'] == 'CATALOG':
-                       ret.append(self.remove_metadata_columns(line_dict))
+                       ret.append(self.prune_streams_and_remove_metadata_columns(line_dict))
                    elif line_dict['type'] == 'RECORD':
                        ret.append(self.extract_data(line_dict))
                    count = count + 1
