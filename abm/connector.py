@@ -108,6 +108,7 @@ class GenericConnector(Container):
                    the_stream = stream
                    break
         if the_stream == None:
+            self.logger.error('Error finding stream in catalog streams')
             raise ValueError("error finding stream in catalog streams")
         # remove metadata columns
         properties = the_stream['json_schema']['properties']
