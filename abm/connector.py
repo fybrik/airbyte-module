@@ -274,7 +274,7 @@ class GenericConnector(Container):
             return None
 
         # step 2: call read_stream() to run Airbyte read operation
-        with tempfile.NamedTemporaryFile(dir=self.workdir,delete=False) as tmp_configured_catalog:
+        with tempfile.NamedTemporaryFile(dir=self.workdir) as tmp_configured_catalog:
             return self.read_stream(tmp_configured_catalog)
 
     '''
@@ -286,7 +286,7 @@ class GenericConnector(Container):
         batches = self.get_dataset()
         for batch in batches:
             if batch:
-                with tempfile.NamedTemporaryFile(dir=self.workdir,delete=False) as dataset_file:
+                with tempfile.NamedTemporaryFile(dir=self.workdir) as dataset_file:
                     for line in batch:
                         dataset_file.write(line)
                     dataset_file.flush()
@@ -297,7 +297,7 @@ class GenericConnector(Container):
     Creates a template catalog for write connectors
     '''
     def create_write_catalog(self, schema):
-        tmp_catalog = tempfile.NamedTemporaryFile(dir=self.workdir, mode='w+t',delete=False)
+        tmp_catalog = tempfile.NamedTemporaryFile(dir=self.workdir, mode='w+t')
         tmp_catalog.writelines(schema)
         tmp_catalog.flush()
         return tmp_catalog
