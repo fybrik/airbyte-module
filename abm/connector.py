@@ -2,7 +2,6 @@
 # Copyright 2022 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 #
-import docker
 import json
 import tempfile
 import pyarrow as pa
@@ -95,6 +94,7 @@ class GenericConnector(Container):
     def prune_streams_and_remove_metadata_columns(self, line_dict):
         catalog_streams = line_dict['catalog']['streams']
         stream_name = self.get_stream_name()
+        the_stream = None
         # get the stream to keep: if a stream (table) is provided
         # then find it otherwise use the first stream in
         # streams list.
@@ -107,6 +107,8 @@ class GenericConnector(Container):
                 if stream['name'] == stream_name:
                    the_stream = stream
                    break
+        if the_stream == None:
+            raise ValueError("error finding stream in catalog streams")
         # remove metadata columns
         properties = the_stream['json_schema']['properties']
         for key in list(properties.keys()):
