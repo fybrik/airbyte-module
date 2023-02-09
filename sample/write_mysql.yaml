@@ -4,10 +4,15 @@ data:
     connection:
       name: write_mysql
       write_mysql:
-        connector: airbyte/destination-mysql
+        connector: airbyte/destination-mysql:0.1.20
         host: host.docker.internal
         port: 3306
-        database: test 
+        database: test
+        table: demo
         username: root
         password: password
-        ssl: false
+    normalization:
+      image: airbyte/normalization-mysql:0.2.25
+      integrationType: mysql
+      airbyteVersion: 0.40.14
+

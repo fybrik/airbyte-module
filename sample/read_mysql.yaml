@@ -4,7 +4,7 @@ data:
     connection:
       name: read_mysql
       read_mysql:
-        connector: airbyte/source-mysql
+        connector: airbyte/source-mysql:0.6.15
         host: host.docker.internal
         port: 3306
         database: fybrik

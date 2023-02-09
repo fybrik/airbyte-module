@@ -2,18 +2,17 @@
 # Copyright 2022 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 #
-import docker
 import json
 import tempfile
 import pyarrow as pa
 from pyarrow import json as pa_json
 from .vault import get_secrets_from_vault
+from .container import Container
 
 MOUNTDIR = '/local'
 CHUNKSIZE = 1024
-CTRLD = '\x04'.encode()
 
-class GenericConnector:
+class GenericConnector(Container):
     def __init__(self, config, logger, workdir, asset_name=""):
         if 'connection' not in config:
             raise ValueError("'connection' field missing from configuration")
@@ -41,19 +40,7 @@ class GenericConnector:
             else:
                 logger.info("no secrets returned by vault")
 
-        self.workdir = workdir
-        # Potentially the fybrik-blueprint pod for the airbyte module can start before the docker daemon pod, causing
-        # docker.from_env() to fail
-        retryLoop = 0
-        while retryLoop < 10:
-            try:
-                self.client = docker.from_env()
-            except Exception as e:
-                print('error on docker.from_env() ' + str(e) + ' sleep and retry.  Retry count = ' + str(retryLoop))
-                time.sleep(1)
-                retryLoop += 1
-            else:
-                retryLoop = 10
+        super().__init__(logger, workdir, MOUNTDIR)
 
         self.connector = self.config['connector']
 
@@ -62,13 +49,14 @@ class GenericConnector:
         # since the Airbyte connectors do not recognize this field
         del self.config['connector']
 
-        self.logger = logger
-
         # if the port field is a string, cast it to integer
         if 'port' in self.config and type(self.config['port']) == str:
             self.config['port'] = int(self.config['port'])
 
         self.catalog_dict = None
+        # json_schema holds the json schema of the stream (table) to read if such stream is provided.
+        # otherwise it holds the json schema of the first stream in the catalog.
+        self.json_schema = None
 
         # create the temporary json file for configuration
         self.conf_file = tempfile.NamedTemporaryFile(dir=self.workdir)
@@ -89,12 +77,48 @@ class GenericConnector:
         self.conf_file.close()
 
     '''
-    Translate the name of the temporary file in the host to the name of the same file
-    in the container.
-    For instance, it the path is '/tmp/tmp12345', return '/local/tmp12345'.
+    This function does the following:
+    - Prune the catalog streams into only one stream: if a stream (table) is provided then keep it.
+      Otherwise the first stream is kept.
+    - Remove metadata columns, if such exists, from "CATALOG" lines returned by an Airbyte read operation.
+      For instance, if a line is:
+        {'name': 'stream_name', 'json_schema': {'type': 'object', 'properties': {'_airbyte_stream_name_hashid': {'type': 'string'}, '_airbyte_ab_id': {'type': 'string'},
+        'dob': {'type': 'string'}, '_airbyte_normalized_at': {'type': 'string', 'format': 'date-time', 'airbyte_type': 'timestamp_without_timezone'},
+         'name': {'type': 'string'}, '_airbyte_emitted_at': {'type': 'string', 'format': 'date-time', 'airbyte_type': 'timestamp_with_timezone'}}}}
+      extract:
+        {'name': 'stream_name', 'json_schema': {'type': 'object', 'properties': {'dob': {'type': 'string'},'name': {'type': 'string'}}}}
+
+      These metadata columns are added in the normalization process.
+      ref:  https://docs.airbyte.com/understanding-airbyte/basic-normalization
     '''
-    def name_in_container(self, path):
-        return path.replace(self.workdir, MOUNTDIR, 1)
+    def prune_streams_and_remove_metadata_columns(self, line_dict):
+        catalog_streams = line_dict['catalog']['streams']
+        stream_name = self.get_stream_name()
+        the_stream = None
+        # get the stream to keep: if a stream (table) is provided
+        # then find it otherwise use the first stream in
+        # streams list.
+        if stream_name == "":
+            # no specific stream was provided then take the first item
+            # in the list
+            the_stream = catalog_streams[0]
+        else:
+            for stream in catalog_streams:
+                if stream['name'] == stream_name:
+                   the_stream = stream
+                   break
+        if the_stream == None:
+            self.logger.error('Error finding stream in catalog streams')
+            raise ValueError("error finding stream in catalog streams")
+        # remove metadata columns
+        properties = the_stream['json_schema']['properties']
+        for key in list(properties.keys()):
+            if key.startswith('_airbyte_'):
+                del properties[key]
+        # set the json_schema for later use
+        self.json_schema = the_stream['json_schema']
+        line_dict['catalog']['streams'] = [the_stream]
+        return json.dumps(line_dict).encode()
 
     '''
     Extract only the relevant data in "RECORD" lines returned by an Airbyte read operation.
@@ -122,7 +146,7 @@ class GenericConnector:
                    if line_dict['type'] == 'LOG':
                        continue
                    if line_dict['type'] == 'CATALOG':
-                       ret.append(line)
+                       ret.append(self.prune_streams_and_remove_metadata_columns(line_dict))
                    elif line_dict['type'] == 'RECORD':
                        ret.append(self.extract_data(line_dict))
                    count = count + 1
@@ -141,36 +165,12 @@ class GenericConnector:
     Mount the workdir on /local. Remove the container after done.
     '''
     def run_container(self, command):
-        self.logger.debug("running command: " + command)
-        try:
-            reply = self.client.containers.run(self.connector, command,
-                volumes=[self.workdir + ':' + MOUNTDIR], network_mode='host',
-                remove=True, stream=True)
-            return self.filter_reply(reply)
-        except docker.errors.DockerException as e:
-            self.logger.error('Running of docker container failed',
-                              extra={'error': str(e)})
-            return None
+        volumes=[self.workdir + ':' + MOUNTDIR]
+        return super().run_container(command, self.connector, volumes=volumes, remove=True, detach=False, stream=True)
 
     def open_socket_to_container(self, command):
-        container = self.client.containers.run(self.connector, detach=True,
-                             tty=True, stdin_open=True,
-                             volumes=[self.workdir + ':' + MOUNTDIR], network_mode='host',
-                             command=command, remove=True)
-        # attach to the container stdin socket
-        s = container.attach_socket(params={'stdin': 1, 'stream': 1, 'stdout': 1, 'stderr': 1})
-        s._sock.setblocking(True)
-        return s, container
-
-    def close_socket_to_container(self, s, container):
-        s._sock.sendall(CTRLD)  # ctrl d to finish things up
-        s._sock.close()
-        container.stop()
-        self.client.close()
-
-    def write_to_socket_to_container(self, s, binary_textline):
-        s._sock.sendall(binary_textline)
-        s.flush()
+        volumes=[self.workdir + ':' + MOUNTDIR]
+        return super().open_socket_to_container(command, self.connector, volumes)
 
     # Given configuration, obtain the Airbyte Catalog, which includes list of datasets
     def get_catalog(self):
@@ -186,6 +186,7 @@ class GenericConnector:
 
     '''
     Return the schema of the first dataset in the catalog.
+    If a stream (table) is provided then its schema is returned.
     Used by arrow-flight server for both the get_flight_info() and do_get().
     Not needed for the Airbyte http server.
     '''
@@ -195,7 +196,7 @@ class GenericConnector:
             return None
 
         schema = pa.schema({})
-        properties = self.catalog_dict['catalog']['streams'][0]['json_schema']['properties']
+        properties = self.json_schema['properties']
         for field in properties:
             type_field = properties[field]['type']
             if type(type_field) is list:
@@ -215,6 +216,7 @@ class GenericConnector:
         stream_name = self.get_stream_name()
         for stream in self.catalog_dict['catalog']['streams']:
             if 'name' in stream:
+                # read only the relavent stream if such provided
                 if stream_name != "" and stream['name'] != stream_name:
                     continue
             stream_dict = {}

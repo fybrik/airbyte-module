@@ -13,6 +13,7 @@ spec:
         host: mysql.fybrik-airbyte-sample
         port: 3306
         database: test
+        table: demo
   metadata:
     name: test data
     geography: theshire
