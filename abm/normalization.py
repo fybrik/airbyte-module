@@ -30,8 +30,7 @@ class NormalizationContainer(Container):
         # The normalization image is tied to and released along with a specific Airbyte version.
         # ref: https://github.com/airbytehq/airbyte/blob/master/docs/understanding-airbyte/basic-normalization.md#airbyte-integrationbasesbase-normalization
         environment=["WORKER_ENVIRONMENT=DOCKER", "AIRBYTE_VERSION=" + self.airbyte_version]
-        super().run_container(command, self.normalization_image, volumes, environment, remove=True, stream=True, init=True)
-
+        return super().run_container(command, self.normalization_image, volumes, environment, remove=True, stream=True, init=True)
     '''
     Creates a normalization command
     '''
