@@ -220,8 +220,10 @@ class ABMFlightServer(fl.FlightServerBase):
                 logger.info('starting normalization')
                 normalization_container = NormalizationContainer(asset_conf, logger, self.workdir, asset_name)
                 command = normalization_container.create_normalization_command(catalog=catalog,config=connector.conf_file)
-                for line in normalization_container.run_container(command):
-                    logger.debug(line)
+                reply = normalization_container.run_container(command)
+                if reply:
+                    for line in reply:
+                        logger.debug(line)
 
             catalog.close()
             
