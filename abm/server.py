@@ -223,7 +223,7 @@ class ABMFlightServer(fl.FlightServerBase):
                 reply = normalization_container.run_container(command)
                 if reply:
                     for line in reply:
-                        logger.debug(line)
+                        logger.trace(line)
 
             catalog.close()
             
