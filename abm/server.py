@@ -222,8 +222,10 @@ class ABMFlightServer(fl.FlightServerBase):
                 command = normalization_container.create_normalization_command(catalog=catalog,config=connector.conf_file)
                 reply = normalization_container.run_container(command)
                 if reply:
+                    logger.trace('normalization output:')
                     for line in reply:
                         logger.trace(line)
+                logger.info('normalization ended')
 
             catalog.close()
             
