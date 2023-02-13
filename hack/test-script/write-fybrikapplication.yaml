@@ -1,0 +1,19 @@
+apiVersion: app.fybrik.io/v1beta1
+kind: FybrikApplication
+metadata:
+  name: my-app-write
+  labels:
+    app: my-app-write
+spec:
+  selector:
+    workloadSelector:
+      matchLabels:
+        app: my-app-write
+  appInfo:
+    intent: Fraud Detection
+  data:
+    - dataSetID: "fybrik-airbyte-sample/userdata"
+      flow: write
+      requirements:
+        interface:
+          protocol: fybrik-arrow-flight

@@ -1,0 +1,18 @@
+apiVersion: app.fybrik.io/v1beta1
+kind: FybrikApplication
+metadata:
+  name: my-app-read
+  labels:
+    app: my-app-read
+spec:
+  selector:
+    workloadSelector:
+      matchLabels:
+        app: my-app-read
+  appInfo:
+    intent: Fraud Detection
+  data:
+    - dataSetID: "fybrik-airbyte-sample/userdata"
+      requirements:
+        interface:
+          protocol: fybrik-arrow-flight
