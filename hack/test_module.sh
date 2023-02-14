@@ -2,9 +2,9 @@
 # This script tests writing and reading to mysql using the airbyte module with Fybrik
 # it does the following:
 # 1) create fybrikapplication for writing a mysql table
-# 2) write a dataset using the airbyte module
+# 2) write a dataset using the deployed airbyte module
 # 3) create fybrikapplication for reading a mysql table
-# 4) read a dataset using the airbyte module
+# 4) read a dataset using the deployed airbyte module
 # 5) it compares the result of reading the newly written table using the airbyte module to reading it using a mysql client.
 
 

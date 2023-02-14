@@ -34,10 +34,11 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
 
 1. Setup and initialize mysql for reading a dataset
 
-    1. Deploy [mysql](https://bitnami.com/stack/mysql/helm) helm chart in `fybrik-airbyte-sample` namespace:
+    1. Deploy [mysql](https://bitnami.com/stack/mysql/helm) helm chart in `fybrik-airbyte-sample` namespace.
       ```bash
       helm repo add bitnami https://charts.bitnami.com/bitnami
       helm install mysql bitnami/mysql -n fybrik-airbyte-sample
+      ${TOOLBIN}/kubectl wait pod --for=condition=ready mysql-0 --namespace fybrik-airbyte-sample --timeout 20m
       ```
     2. Use the instructions from the helm chart notes to run a pod that is use as a client and connect to the service:
       ```bash
@@ -108,6 +109,7 @@ Repeat steps 1-5 above.
       ```bash
       helm repo add bitnami https://charts.bitnami.com/bitnami
       helm install mysql bitnami/mysql -n fybrik-airbyte-sample
+      ${TOOLBIN}/kubectl wait pod --for=condition=ready mysql-0 --namespace fybrik-airbyte-sample --timeout 20m
       ```
     2. Use the instructions from the helm chart notes to run a pod that is use as a client and connect to the service:
       ```bash

@@ -4,8 +4,6 @@
 
 source ./common.sh
 
-KUBECTL_VERSION=v1.26.1
-
 header_text "Checking for bin/kubectl ${KUBECTL_VERSION}"
 [[ -f bin/kubectl && `bin/kubectl version -o=yaml 2> /dev/null | bin/yq e '.clientVersion.gitVersion' -` == "v${KUBECTL_VERSION}" ]] && exit 0
 
