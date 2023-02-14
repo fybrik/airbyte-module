@@ -211,8 +211,8 @@ kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-re
 
 # check that what was written using airbyte module is identical to what was read using airbyte module.
 # skip first column from what was read as its the index.
-awk '(NR>1)' ${tmp_dir}/out_fybrik_write.txt | awk {'print $1$2$3'} > ${tmp_dir}/fybrik_write.txt
-awk '(NR>1)' ${tmp_dir}/out_fybrik_read.txt | awk {'print $2$3$4'} > ${tmp_dir}/fybrik_read.txt
+awk '(NR>1)' ${tmp_dir}/out_fybrik_write.txt | awk {'print $1,$2,$3'} > ${tmp_dir}/fybrik_write.txt
+awk '(NR>1)' ${tmp_dir}/out_fybrik_read.txt | awk {'print $2,$3,$4'} > ${tmp_dir}/fybrik_read.txt
 DIFF=$(diff -b ${tmp_dir}/fybrik_read.txt ${tmp_dir}/fybrik_write.txt)
 RES=0
 if [ "${DIFF}" == "" ]
