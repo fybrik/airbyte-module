@@ -9,14 +9,23 @@ env:
   DOCKER_HOSTNAME: ghcr.io
   DOCKER_NAMESPACE: fybrik 
   DOCKER_USERNAME: ${{ github.actor }}
+  GO_VERSION: 1.19
 
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-
+    env:
+      kubectlVersion: 'kind25'
+      fybrikVersion: 'master'
+      moduleVersion: 'master'
+      certManagerVersion: '1.6.2'
     steps:
     - uses: actions/checkout@v2
+    - name: Install Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{ env.GO_VERSION }}
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -26,6 +35,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
         pip install pipenv
+    - name: Install tools
+      run: make install-tools
+    - name: run-test
+      run: pushd hack && ./test_module.sh $kubectlVersion $fybrikVersion $moduleVersion $certManagerVersion
     - name: Build docker image 
       run: make build
 

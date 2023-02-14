@@ -5,8 +5,6 @@
 
 source ./common.sh
 
-HELM_VERSION=v3.8.2
-
 header_text "Checking for bin/helm ${HELM_VERSION}"
 [[ -f bin/helm &&  `bin/helm version --template='{{.Version}}'` == ${HELM_VERSION} ]] && exit 0
 

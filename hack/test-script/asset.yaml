@@ -1,0 +1,20 @@
+apiVersion: katalog.fybrik.io/v1alpha1
+kind: Asset
+metadata:
+  name: userdata
+spec:
+  secretRef: 
+    name: userdata
+  details:
+    dataFormat: csv
+    connection:
+      name: mysql
+      mysql:
+        host: mysql.fybrik-airbyte-sample
+        port: 3306
+        database: test
+        table: demo
+  metadata:
+    name: test data
+    geography: theshire
+
