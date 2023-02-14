@@ -60,6 +60,7 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
       (1,'PAYMENT','11668.14','C2048537720','41554','29885.86','M1230701703','0','0',0,0),
       (1,'PAYMENT','7817.71','C90045638','53860','46042.29','M573487274','0','0',0,0);
       ```
+      press `exit` to exit mysql shell prompt and then press `exit` again to exit mysql-client pod.
 
 1. Register the credentials required for accessing the dataset as a kubernetes secret. Replace the value for MYSQL_ROOT_PASSWORD with the mysql service password as described in the section above:
 
@@ -123,6 +124,7 @@ Repeat steps 1-5 above.
       ```bash
       create database test;
       ```
+      press `exit` to exit mysql shell prompt and then press `exit` again to exit mysql-client pod.
 
 1. Register the credentials required for accessing the dataset as a kubernetes secret. Replace the value for MYSQL_ROOT_PASSWORD with the mysql service password as described in the section above:
 
@@ -161,8 +163,12 @@ Repeat steps 1-5 above.
 
 1. To verify that the Airbyte module writes the dataset, run:
    ```bash
-   kubectl exec -it mysql-client --namespace fybrik-airbyte-sample -- bash
+   kubectl run mysql-client --rm --tty -i --restart='Never' --image  docker.io/bitnami/mysql:8.0.32-debian-11-r0 --namespace fybrik-airbyte-sample --env MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --command -- bash
    mysql -h mysql.fybrik-airbyte-sample.svc.cluster.local -uroot -p"$MYSQL_ROOT_PASSWORD"
+   ```
+
+1. In a mysql client shell prompt insert the following commands to show the newly created dataset:
+   ```bash
    use test;
    show tables;
    select * from demo;
