@@ -4,7 +4,7 @@ This sample is for experimenting with the Airbyte Module (ABM) mysql connetor.
 
 The server is configured to read and write a mysql table.
 
-It uses Kuberentes for the mysql chart deployment only while the Airbyte Module (ABM) runs locally without Kubernetes.
+It uses Kuberentes only for the mysql chart deployment, while the Airbyte Module (ABM) runs locally without Kubernetes.
 
 ## Before you begin
 
@@ -35,7 +35,7 @@ The tools can also be found in `hack/tools/bin` directory after executing `make 
       helm install mysql bitnami/mysql -n fybrik-airbyte-sample
       kubectl wait pod --for=condition=ready mysql-0 --namespace fybrik-airbyte-sample --timeout 20m
       ```
-    3. Use the instructions from the helm chart notes to run a pod that is use as a client and connect to the service:
+    3. Use the instructions from the helm chart notes to run a pod that is used as a client and connects to the service:
       ```bash
       echo Username: root
       export MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace fybrik-airbyte-sample mysql -o jsonpath="{.data.mysql-root-password}" | base64 -d)
@@ -58,7 +58,7 @@ The tools can also be found in `hack/tools/bin` directory after executing `make 
 
     5. exit the `mysql` prompt and `mysql-client` pod
 
-    6. port foward mysql service:
+    6. port forward mysql service:
       ```bash
       kubectl port-forward svc/mysql -n fybrik-airbyte-sample 3306:3306 &
       ```
@@ -96,7 +96,7 @@ The tools can also be found in `hack/tools/bin` directory after executing `make 
       helm install mysql bitnami/mysql -n fybrik-airbyte-sample
       kubectl wait pod --for=condition=ready mysql-0 --namespace fybrik-airbyte-sample --timeout 20m
       ```
-    3. Use the instructions from the helm chart notes to run a pod that is use as a client and connect to the service:
+    3. Use the instructions from the helm chart notes to run a pod that is used as a client and connects to the service:
       ```bash
       echo Username: root
       export MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace fybrik-airbyte-sample mysql -o jsonpath="{.data.mysql-root-password}" | base64 -d)
@@ -111,7 +111,7 @@ The tools can also be found in `hack/tools/bin` directory after executing `make 
 
     5. exit the `mysql` prompt and `mysql-client` pod
 
-    6. port foward mysql service:
+    6. port forward mysql service:
       ```bash
       kubectl port-forward svc/mysql -n fybrik-airbyte-sample 3306:3306 &
       ```
