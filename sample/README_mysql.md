@@ -1,6 +1,6 @@
 # Mysql Sample
 
-This sample is for experimenting with the Airbyte Module (ABM) mysql connetor.
+This sample is for experimenting with the Airbyte Module (ABM) mysql connector.
 
 The server is configured to read and write a mysql table.
 
