@@ -57,7 +57,7 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
 ```bash
 oc adm policy add-scc-to-user privileged system:serviceaccount:fybrik-blueprints:<SERVICE_ACCOUNT_NAME>
 ```
-> Then, the doployment will be restarted and creating the pods in `fybrik-blueprints` namespace.
+> Then, the deployment will restart the failed pods and the pods in `fybrik-blueprints` namespace should start successfully.
 ---
 
 1. To verify that the Airbyte module gives access to the `userdata` dataset, run:
