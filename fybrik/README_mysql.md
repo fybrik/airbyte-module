@@ -64,19 +64,19 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
 
 1. Register the credentials required for accessing the dataset as a kubernetes secret. Replace the value for MYSQL_ROOT_PASSWORD with the mysql service password as described in the section above:
 
-  ```bash
- cat << EOF | kubectl apply -f -
-apiVersion: v1
-kind: Secret
-metadata:
-  name: userdata
-  namespace: fybrik-airbyte-sample
-type: Opaque
-stringData:
-  username: root
-  password: "${MYSQL_ROOT_PASSWORD}"
-EOF
-  ```
+    ```bash
+    cat << EOF | kubectl apply -f -
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: userdata
+      namespace: fybrik-airbyte-sample
+    type: Opaque
+    stringData:
+      username: root
+      password: "${MYSQL_ROOT_PASSWORD}"
+    EOF
+      ```
 
 1. Create an asset (the `userdata` asset) and an application that requires this asset:
    ```bash
@@ -88,6 +88,13 @@ EOF
    ```bash
    kubectl get pods -n fybrik-blueprints
    ```
+    ---
+    > _NOTE:_ If you are using OpenShift cluster you will see that the deployment fails because OpenShift doesn't allow `privileged: true` value in `securityContext` field by default. Thus, you should add the service account of the module's deployment to the `privileged SCC` using the following command:
+    ```bash
+    oc adm policy add-scc-to-user privileged system:serviceaccount:fybrik-blueprints:<SERVICE_ACCOUNT_NAME>
+    ```
+    > Then, the deployment will restart the failed pods and the pods in `fybrik-blueprints` namespace should start successfully.
+    ---
 
 1. To verify that the Airbyte module gives access to the `userdata` dataset, run:
    ```bash
@@ -152,6 +159,7 @@ Repeat steps 1-5 above.
    ```bash
    kubectl get pods -n fybrik-blueprints
    ```
+    > _NOTE:_ See the note in step 9 above.
 
 1. Run the following commands to exceute a write command:
    ```bash
