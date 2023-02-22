@@ -52,6 +52,13 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
    ```bash
    kubectl get pods -n fybrik-blueprints
    ```
+   ---
+   > _NOTE:_ If you are using OpenShift cluster you will see that the deployment fails because OpenShift doesn't allow `privileged: true` value in `securityContext` field by default. Thus, you should add the service account of the module's deployment to the `privileged SCC` using the following command:
+   ```bash
+   oc adm policy add-scc-to-user privileged system:serviceaccount:fybrik-blueprints:<SERVICE_ACCOUNT_NAME>
+   ```
+   > Then, the deployment will restart the failed pods and the pods in `fybrik-blueprints` namespace should start successfully.
+   ---
 
 1. To verify that the Airbyte module gives access to the `userdata` dataset, run:
    ```bash
@@ -78,6 +85,9 @@ Repeat steps 1-5 above.
    ```bash
    kubectl get pods -n fybrik-blueprints
    ```
+
+   > _NOTE:_ See the note in step 7 above.
+
 
 1. To verify that the Airbyte module writes the dataset, run:
    ```bash
