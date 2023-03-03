@@ -98,9 +98,11 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
 
 1. To verify that the Airbyte module gives access to the `userdata` dataset, run:
    ```bash
+   export CATALOGED_ASSET=fybrik-airbyte-sample/userdata
+   export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app-read -n fybrik-airbyte-sample -o "jsonpath={.status.assetStates.${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.hostname}")
    cd $AIRBYTE_MODULE_DIR/helm/client
    ./deploy_airbyte_module_client_pod.sh
-   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-read-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata
+   kubectl exec -it my-shell -n default -- python3 /root/client.py --host ${ENDPOINT_HOSTNAME} --port 80 --asset fybrik-airbyte-sample/userdata
    ```
 
 # Writing Dataset with Fybrik Application
@@ -163,10 +165,12 @@ Repeat steps 1-5 above.
 
 1. Run the following commands to exceute a write command:
    ```bash
+   export CATALOGED_ASSET=fybrik-airbyte-sample/userdata
+   export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app-write -n fybrik-airbyte-sample -o "jsonpath={.status.assetStates.${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.hostname}")
    export AIRBYTE_POD_NAME=$(kubectl get pods -n fybrik-blueprints | grep airbyte |awk '{print $1}')
    cd $AIRBYTE_MODULE_DIR/helm/client
    ./deploy_airbyte_module_client_pod.sh
-   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-write-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata --operation put
+   kubectl exec -it my-shell -n default -- python3 /root/client.py --host ${ENDPOINT_HOSTNAME} --port 80 --asset fybrik-airbyte-sample/userdata --operation put
    ```
 
 1. To verify that the Airbyte module writes the dataset, run:
