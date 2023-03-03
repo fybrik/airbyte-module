@@ -57,5 +57,5 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
    export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app-read -n fybrik-airbyte-sample -o "jsonpath={.status.assetStates.${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.hostname}")
    cd $AIRBYTE_MODULE_DIR/helm/client
    ./deploy_airbyte_module_client_pod.sh
-   kubectl exec -it my-shell -n default -- python3 /root/client.py --host ${ENDPOINT_HOSTNAME} --port 80 --asset fybrik-airbyte-sample/userdata
+   kubectl exec -it my-shell -n default -- python3 /root/client.py --host ${ENDPOINT_HOSTNAME} --port 80 --asset ${CATALOGED_ASSET}
    ```
