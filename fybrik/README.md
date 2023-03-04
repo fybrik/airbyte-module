@@ -93,13 +93,13 @@ Repeat steps 1-5 above.
 
 1. To verify that the Airbyte module writes the dataset, run:
    ```bash
-   export AIRBYTE_POD_NAME=$(kubectl get pods -n fybrik-blueprints | grep airbyte |awk '{print $1}')
+   export AIRBYTE_POD_NAME=$(kubectl get pods -n fybrik-blueprints | grep air |awk '{print $1}')
    cd $AIRBYTE_MODULE_DIR/helm/client
    ./deploy_airbyte_module_client_pod.sh
    export CATALOGED_ASSET=fybrik-airbyte-sample/userdata
    export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app-write -n fybrik-airbyte-sample -o "jsonpath={.status.assetStates.${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.hostname}")
    kubectl exec -it my-shell -n default -- python3 /root/client.py --host ${ENDPOINT_HOSTNAME} --port 80 --asset ${CATALOGED_ASSET} --operation put
-   kubectl exec $AIRBYTE_POD_NAME -n fybrik-blueprints -- cat /local/airbyte_out/_airbyte_raw_testing.jsonl
+   kubectl exec $AIRBYTE_POD_NAME -n fybrik-blueprints -- bash -c "cat /local/airbyte_out/*"
    ```
 
 
