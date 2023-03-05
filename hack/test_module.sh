@@ -186,8 +186,10 @@ done
 kubectl wait --for=condition=ready --all pod -n fybrik-blueprints --timeout=120s
 # do the writing using airbyte module
 kubectl run my-shell --image ghcr.io/fybrik/airbyte-module-client:main --image-pull-policy=Always -n default
+export CATALOGED_ASSET=fybrik-airbyte-sample/userdata
+export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app-write -n fybrik-airbyte-sample -o "jsonpath={.status.assetStates.${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.hostname}")
 kubectl wait pod --for=condition=ready my-shell -n default --timeout 20m
-kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-write-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata --operation put
+kubectl exec -it my-shell -n default -- python3 /root/client.py --host ${ENDPOINT_HOSTNAME} --port 80 --asset ${CATALOGED_ASSET} --operation put
 
 # check the newly written dataset by executing commands using mysql client
 echo "mysql -h mysql.fybrik-airbyte-sample.svc.cluster.local -uroot -p${MYSQL_ROOT_PASSWORD} test -e \"select dob, name from demo\"" > ${tmp_dir}/mysql-command
@@ -206,8 +208,10 @@ do
 done
 
 kubectl wait --for=condition=ready --all pod -n fybrik-blueprints --timeout=120s
+export CATALOGED_ASSET=fybrik-airbyte-sample/userdata
+export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app-read -n fybrik-airbyte-sample -o "jsonpath={.status.assetStates.${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.hostname}")
 # do the reading using airbyte module
-kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-read-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata > ${tmp_dir}/out_fybrik_read.txt
+kubectl exec -it my-shell -n default -- python3 /root/client.py --host ${ENDPOINT_HOSTNAME} --port 80 --asset ${CATALOGED_ASSET} > ${tmp_dir}/out_fybrik_read.txt
 
 # check that what was written using airbyte module is identical to what was read using airbyte module.
 # skip first column from what was read as its the index.
