@@ -87,11 +87,8 @@ kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=300s
 # helm install fybrik-crd
 helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
 
-# customize taxonomy to support the airbyte module
-go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json $AIRBYTE_FYBRIK_TEST/fybrik-taxonomy-customize.yaml
-
 # helm install fybrik
-helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
+helm install fybrik charts/fybrik --set global.tag=master --set coordinator.catalog=katalog -n fybrik-system --wait
 
 popd
 
@@ -140,7 +137,8 @@ pushd helm/client
 ./deploy_airbyte_module_client_pod.sh
 popd
 
-kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-airbyte-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata > res.out
+SVC=(`k get svc -n fybrik-blueprints | grep my-app | awk '{print $1}'`)
+kubectl exec -it my-shell -n default -- python3 /root/client.py --host $SVC.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata > res.out
 kubectl delete pod my-shell -n default
 
 DIFF=$(diff -b $WORKING_DIR/expected.txt res.out)
