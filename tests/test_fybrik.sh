@@ -137,7 +137,7 @@ pushd helm/client
 ./deploy_airbyte_module_client_pod.sh
 popd
 
-SVC=(`k get svc -n fybrik-blueprints | grep my-app | awk '{print $1}'`)
+SVC=(`kubectl get svc -n fybrik-blueprints | grep my-app | awk '{print $1}'`)
 kubectl exec -it my-shell -n default -- python3 /root/client.py --host $SVC.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata > res.out
 kubectl delete pod my-shell -n default
 
