@@ -1,3 +1,6 @@
+[requires]
+python_version = "3.9"
+
 [[source]]
 name = "pypi"
 url = "https://pypi.org/simple"
@@ -20,4 +23,4 @@ pyarrow = "==8.0.0"
 fybrik_python_logging = "==0.1.0"
 fybrik_python_vault = "==0.2.0"
 faker = "==13.3.0"
-airbyte-cdk = "==0.1.53"
+airbyte-cdk = "==0.31.1"
