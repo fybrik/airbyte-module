@@ -1,0 +1,12 @@
+apiVersion: app.fybrik.io/v1beta2
+kind: FybrikStorageAccount
+metadata:
+  name: account-mysql
+spec:
+  id: theshire-mysql
+  type: mysql
+  secretRef: creds-mysql
+  geography: theshire
+  mysql:
+    host: mysql.fybrik-airbyte-sample
+    port: 3306

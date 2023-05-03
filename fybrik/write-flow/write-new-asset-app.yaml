@@ -1,0 +1,35 @@
+apiVersion: app.fybrik.io/v1beta1
+kind: FybrikApplication
+metadata:
+  name: my-notebook-write
+  labels:
+    app: my-notebook-write
+spec:
+  selector:
+    clusterName: thegreendragon
+    workloadSelector:
+      matchLabels:
+        app: my-notebook-write
+  appInfo:
+    intent: Fraud Detection
+  data:
+    - dataSetID: newdata
+      flow: write
+      requirements:
+        flowParams:
+          isNewDataSet: true
+          metadata:
+            tags:
+              Purpose.finance: true
+            columns:
+              - name: DOB
+                tags:
+                  PII.Sensitive: true
+              - name: FirstName
+                tags:
+                  PII.Sensitive: true
+              - name: LastName
+                tags:
+                  PII.Sensitive: true
+        interface:
+          protocol: fybrik-arrow-flight
