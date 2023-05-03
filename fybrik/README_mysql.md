@@ -185,9 +185,9 @@ In this example, a small dataset is written to mysql table and registered in the
 
 As above, you will need a copy of the Fybrik repository (`git clone https://github.com/fybrik/fybrik.git`). Set the following environment variables: FYBRIK_DIR for the path of the `fybrik` directory, and AIRBYTE_MODULE_DIR for the path of the `airbyte-module` directory.
 
-Repeat steps 1-5 above.
+Repeat steps 1-4 above.
    
-6. Register the credentials required for writing the dataset as a kubernetes secret. Replace the value for MYSQL_ROOT_PASSWORD with the mysql service password as described in the section above:
+5. Register the credentials required for writing the dataset as a kubernetes secret. Replace the value for MYSQL_ROOT_PASSWORD with the mysql service password as described in the section above:
 
       ```bash
       cat << EOF | kubectl apply -f -
