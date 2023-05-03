@@ -156,7 +156,7 @@ Repeat steps 1-4 above.
    ```
     > _NOTE:_ See the note in step 9 above.
 
-1. Run the following commands to exceute a write command:
+1. Run the following commands to execute a write command:
    ```bash
    export CATALOGED_ASSET=fybrik-airbyte-sample/userdata
    export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app-write -n fybrik-airbyte-sample -o "jsonpath={.status.assetStates.${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.hostname}")
@@ -215,7 +215,7 @@ Repeat steps 1-4 above.
    ```
     > _NOTE:_ See the note in [Reading a Dataset by a Fybrik Application](#reading-a-dataset-by-a-fybrik-application).
 
-1. Run the following commands to exceute a write command:
+1. Run the following commands to execute a write command:
    ```bash
    export ASSET_NAME=newdata
    export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app-write -n fybrik-airbyte-sample -o "jsonpath={.status.assetStates.${ASSET_NAME}.endpoint.fybrik-arrow-flight.hostname}")
