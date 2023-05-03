@@ -220,7 +220,7 @@ Repeat steps 1-4 above.
       ```
 
 1. Register a storage account specifying the mysql server details and the credentials and apply an application that writes this asset:
-```bash
+   ```bash
    kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/storage-account.yaml -n fybrik-system
    kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/write-new-asset-app.yaml -n fybrik-airbyte-sample
    ```
