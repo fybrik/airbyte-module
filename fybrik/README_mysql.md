@@ -185,25 +185,9 @@ In this example, a small dataset is written to mysql table and registered in the
 
 As above, you will need a copy of the Fybrik repository (`git clone https://github.com/fybrik/fybrik.git`). Set the following environment variables: FYBRIK_DIR for the path of the `fybrik` directory, and AIRBYTE_MODULE_DIR for the path of the `airbyte-module` directory.
 
-Repeat steps 1-4 above.
-
-5. Setup and initialize mysql for writing a dataset
-
-    1. Deploy [mysql](https://bitnami.com/stack/mysql/helm) helm chart in `fybrik-airbyte-sample` namespace:
-      ```bash
-      helm repo add bitnami https://charts.bitnami.com/bitnami
-      helm install mysql bitnami/mysql -n fybrik-airbyte-sample
-      kubectl wait pod --for=condition=ready mysql-0 --namespace fybrik-airbyte-sample --timeout 20m
-      ```
-    2. Use the instructions from the helm chart notes to run a pod that is use as a client and connect to the service:
-      ```bash
-      echo Username: root
-      MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace fybrik-airbyte-sample mysql -o jsonpath="{.data.mysql-root-password}" | base64 -d)
-      kubectl run mysql-client --rm --tty -i --restart='Never' --image  docker.io/bitnami/mysql:8.0.32-debian-11-r0 --namespace fybrik-airbyte-sample --env MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --command -- bash
-      mysql -h mysql.fybrik-airbyte-sample.svc.cluster.local -uroot -p"$MYSQL_ROOT_PASSWORD"
-      ```
+Repeat steps 1-5 above.
    
-1. Register the credentials required for writing the dataset as a kubernetes secret. Replace the value for MYSQL_ROOT_PASSWORD with the mysql service password as described in the section above:
+6. Register the credentials required for writing the dataset as a kubernetes secret. Replace the value for MYSQL_ROOT_PASSWORD with the mysql service password as described in the section above:
 
       ```bash
       cat << EOF | kubectl apply -f -
@@ -229,7 +213,7 @@ Repeat steps 1-4 above.
    ```bash
    kubectl get pods -n fybrik-blueprints
    ```
-    > _NOTE:_ See the note in step 9 above.
+    > _NOTE:_ See the note in [Reading a Dataset by a Fybrik Application](#reading-a-dataset-by-a-fybrik-application).
 
 1. Run the following commands to exceute a write command:
    ```bash
