@@ -6,7 +6,7 @@ Therefore, to satisfy the constraints, Fybrik must deploy two modules: the airby
 dataset, and the [arrow-flight-module](https://github.com/fybrik/arrow-flight-module) for transforming the
 dataset based on the governance policies.
 
-The current use case differs from the `Unrestricted Read` use case outlined [here](README.md) in that governance policies mandate transformation of sensitive data. See our use case's [policy](sample-policy-restrictive.rego) vs. the `Unrestricted Read` [policy](sample-policy.rego).
+The current use case differs from the `Unrestricted Read` use case outlined [here](README.md) in that governance policies mandate transformation of sensitive data. See our use case's [policy](sample-policy-restrictive.rego).
 
 We demonstrate how, using an Airbyte FybrikModule, a workload can access data stored in google-sheets, postgres, and other data stores supported by Airbyte connectors. To do so a FybrikApplication (i.e. the request) must be submitted indicating the desired data set(s). In this example, we use the `userdata` dataset, a Parquet file found in https://github.com/Teradata/kylo/blob/master/samples/sample-data/parquet/userdata2.parquet.
 

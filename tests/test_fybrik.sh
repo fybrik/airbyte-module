@@ -118,10 +118,6 @@ kubectl config set-context --current --namespace=fybrik-airbyte-sample
 
 kubectl apply -f $AIRBYTE_FYBRIK_TEST/read-flow/asset.yaml
 
-kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_FYBRIK_TEST/sample-policy.rego
-kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego
-while [[ $(kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
-
 kubectl apply -f $AIRBYTE_FYBRIK_TEST/read-flow/application.yaml
 CMD="kubectl wait --for=condition=ready --all pod -n fybrik-blueprints --timeout=300s
 "
@@ -150,7 +146,6 @@ DIFF=$(diff -b $WORKING_DIR/expected.txt res.out)
 # cleanup
 /bin/rm res.out
 kubectl delete namespace fybrik-airbyte-sample
-kubectl -n fybrik-system delete configmap sample-policy
 /bin/rm -Rf $FYBRIK_DIR
 
 if [ "${DIFF}" == "" ]

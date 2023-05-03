@@ -25,13 +25,6 @@ You will need a copy of the Fybrik repository (`git clone https://github.com/fyb
    kubectl config set-context --current --namespace=fybrik-airbyte-sample
    ```
 
-1. Create a policy to allow access to any asset (we use a policy that does not restrict access nor mandate any transformations):
-   ```bash
-   kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_MODULE_DIR/fybrik/sample-policy.rego
-   kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego
-   while [[ $(kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
-   ```
-
 1. Setup and initialize mysql for reading a dataset
 
     1. Deploy [mysql](https://bitnami.com/stack/mysql/helm) helm chart in `fybrik-airbyte-sample` namespace.
@@ -111,9 +104,9 @@ In this example, a small dataset is written to mysql table. To do so a FybrikApp
 
 As above, you will need a copy of the Fybrik repository (`git clone https://github.com/fybrik/fybrik.git`). Set the following environment variables: FYBRIK_DIR for the path of the `fybrik` directory, and AIRBYTE_MODULE_DIR for the path of the `airbyte-module` directory.
 
-Repeat steps 1-5 above.
+Repeat steps 1-4 above.
 
-6. Setup and initialize mysql for writing a dataset
+5. Setup and initialize mysql for writing a dataset
 
     1. Deploy [mysql](https://bitnami.com/stack/mysql/helm) helm chart in `fybrik-airbyte-sample` namespace:
       ```bash
@@ -151,7 +144,7 @@ Repeat steps 1-5 above.
       EOF
       ```
 
-1. Create an asset (the `userdata` asset), the policy to access it (we use a policy that does not restrict access nor mandate any transformations), and an application that requires this asset:
+1. Create an asset (the `userdata` asset) and an application that requires this asset:
    ```bash
    kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/asset-mysql.yaml -n fybrik-airbyte-sample
    kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/application.yaml -n fybrik-airbyte-sample
@@ -163,7 +156,7 @@ Repeat steps 1-5 above.
    ```
     > _NOTE:_ See the note in step 9 above.
 
-1. Run the following commands to exceute a write command:
+1. Run the following commands to execute a write command:
    ```bash
    export CATALOGED_ASSET=fybrik-airbyte-sample/userdata
    export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app-write -n fybrik-airbyte-sample -o "jsonpath={.status.assetStates.${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.hostname}")
@@ -186,6 +179,52 @@ Repeat steps 1-5 above.
    select * from demo;
    ```
 
+# Writing and Registering a New Dataset with Fybrik Application
+
+In this example, a small dataset is written to mysql table and registered in the catalog. 
+
+As above, you will need a copy of the Fybrik repository (`git clone https://github.com/fybrik/fybrik.git`). Set the following environment variables: FYBRIK_DIR for the path of the `fybrik` directory, and AIRBYTE_MODULE_DIR for the path of the `airbyte-module` directory.
+
+Repeat steps 1-4 above.
+   
+5. Register the credentials required for writing the dataset as a kubernetes secret. Replace the value for MYSQL_ROOT_PASSWORD with the mysql service password as described in the section above:
+
+      ```bash
+      cat << EOF | kubectl apply -f -
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: creds-mysql
+        namespace: fybrik-system
+      type: Opaque
+      stringData:
+        username: root
+        password: "${MYSQL_ROOT_PASSWORD}"
+      EOF
+      ```
+
+1. Register a storage account specifying the mysql server details and the credentials and apply an application that writes this asset:
+   ```bash
+   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/storage-account.yaml -n fybrik-system
+   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/write-flow/write-new-asset-app.yaml -n fybrik-airbyte-sample
+   ```
+
+1. After the application is created, the Fybrik manager attempts to create the data path for the application. Fybrik realizes that the Airbyte module is required, and deploys it in the `fybrik-blueprints` namespace. To verify that the Airbyte module was indeed deployed, run:
+   ```bash
+   kubectl get pods -n fybrik-blueprints
+   ```
+    > _NOTE:_ See the note in [Reading a Dataset by a Fybrik Application](#reading-a-dataset-by-a-fybrik-application).
+
+1. Run the following commands to execute a write command:
+   ```bash
+   export ASSET_NAME=newdata
+   export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app-write -n fybrik-airbyte-sample -o "jsonpath={.status.assetStates.${ASSET_NAME}.endpoint.fybrik-arrow-flight.hostname}")
+   export AIRBYTE_POD_NAME=$(kubectl get pods -n fybrik-blueprints | grep air |awk '{print $1}')
+   cd $AIRBYTE_MODULE_DIR/helm/client
+   ./deploy_airbyte_module_client_pod.sh
+   kubectl exec -it my-shell -n default -- python3 /root/client.py --host ${ENDPOINT_HOSTNAME} --port 80 --asset ${ASSET_NAME} --operation put
+   ```
+
 # Cleanup
 
 When you're finished experimenting with a sample, you may clean up as follows:
@@ -197,7 +236,7 @@ kubectl delete namespace fybrik-airbyte-sample
 ```
 
 To experiment with a sample after the deletion of `fybrik-airbyte-sample` namespace,
-re-create the namespace with the following commands and continue from step 6 in the chosen sample.
+re-create the namespace with the following commands and continue from step 5 in the chosen sample.
 
 ```bash
 kubectl create namespace fybrik-airbyte-sample
