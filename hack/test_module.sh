@@ -157,21 +157,6 @@ ${TOOLBIN}/kubectl apply -f $WORKING_DIR/asset.yaml -n fybrik-airbyte-sample
 
 ${TOOLBIN}/kubectl describe asset userdata -n fybrik-airbyte-sample
 
-
-kubectl -n fybrik-system create configmap sample-policy --from-file=$WORKING_DIR/sample-policy.rego
-kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego
-while [[ $(kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
-
-
-c=0
-while [[ $(${TOOLBIN}/kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]
-do
-    echo "waiting"
-    ((c++)) && ((c==25)) && break
-    sleep 1
-done
-
-
 # apply fybrik application for writing
 ${TOOLBIN}/kubectl apply -f $WORKING_DIR/write-fybrikapplication.yaml -n fybrik-airbyte-sample
 
@@ -230,7 +215,6 @@ ${TOOLBIN}/kubectl get cm -o yaml -n fybrik-blueprints
 
 rm -rf ${tmp_dir}
 ${TOOLBIN}/kubectl delete namespace fybrik-airbyte-sample
-${TOOLBIN}/kubectl -n fybrik-system delete configmap sample-policy
 
 if [ ${RES} == 1 ]
 then
